@@ -1,0 +1,74 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 028a57da204b8fb4d8ebc8ecdd69e52c, type: 3}
+  m_Name: WeaponLib
+  m_EditorClassIdentifier: 
+  weaponList:
+  - sprite: {fileID: 1188897484, guid: 3f94b4b74a4cb5d4184efb7a0d322f08, type: 3}
+    prefab: {fileID: 5575428158386617136, guid: 49e31007a51130c438730797d0315b5f, type: 3}
+    ID: P3000
+    name: P-3000
+    description: "contrary to it\u2019s high tech name, it is just something scavenged
+      from a flea market with 50% discount because nobody wanted it. the \u2018P\u2019
+      probably stands for potato."
+    unlocked: 1
+  - sprite: {fileID: -450795487, guid: 3f94b4b74a4cb5d4184efb7a0d322f08, type: 3}
+    prefab: {fileID: 5575428158386617136, guid: decdadc998b861f4d80af650b53050a4, type: 3}
+    ID: BEAN_BLASTER
+    name: bean blaster
+    description: a rapid fire weapon that wants to demolish the target.
+    unlocked: 1
+  - sprite: {fileID: 1291995513, guid: 13c8528395d5a5a4f8572190afd970f5, type: 3}
+    prefab: {fileID: 0}
+    ID: BLIND_SPOT
+    name: blind spot
+    description: shoots in all directions from the player but cannot be aimed at
+      a specific target.
+    unlocked: 0
+  - sprite: {fileID: -1410854622, guid: e2d4bf5884f72684ea45dd90dbdb50f9, type: 3}
+    prefab: {fileID: 0}
+    ID: PICKLE_PADDLE
+    name: pickle paddle
+    description: close range weapon that knocks back enemies and blocks projectiles.
+    unlocked: 0
+  - sprite: {fileID: 1900008406, guid: ccaec11c67cf34c47a6d6953392baabe, type: 3}
+    prefab: {fileID: 0}
+    ID: KATANA
+    name: katana
+    description: close range weapon that deflects projectiles. feels like a badass
+      while holding it.
+    unlocked: 0
+  - sprite: {fileID: 1713474222, guid: 481f049370188b446972609ecfc91bd0, type: 3}
+    prefab: {fileID: 0}
+    ID: ERROR
+    name: ERROR
+    description: ERROR
+    unlocked: 0
+  - sprite: {fileID: 1713474222, guid: 481f049370188b446972609ecfc91bd0, type: 3}
+    prefab: {fileID: 0}
+    ID: KITCHEN_KNIFE
+    name: kitchen knife
+    description: light weight, affordable, easy to find weapon of choice.
+    unlocked: 0
+  - sprite: {fileID: 1713474222, guid: 481f049370188b446972609ecfc91bd0, type: 3}
+    prefab: {fileID: 0}
+    ID: STONE
+    name: a stone
+    description: designed to kill two birds with one attack.
+    unlocked: 0
+  - sprite: {fileID: 1713474222, guid: 481f049370188b446972609ecfc91bd0, type: 3}
+    prefab: {fileID: 0}
+    ID: BOMB
+    name: bomb
+    description: throws a bomb that explodes certain time later. the explosion can
+      also damage the player.
+    unlocked: 0
