@@ -22,6 +22,7 @@ public class PauseMenu : MonoBehaviour
     {
         GameManager.ResumeGame();
         UIManager.main.HideOverlayBackground();
+        main.BackToPauseMenu();
         main.group.DOKill();
         main.group.DOFade(0, 0.2f).SetUpdate(true).OnComplete(()=> main.gameObject.SetActive(false));
     }
@@ -30,6 +31,15 @@ public class PauseMenu : MonoBehaviour
     public GameObject resumeButton;
     public GameObject mainGroup;
     public GameObject settingsGroup;
+    public GameObject howtoGroup;
+    public GameObject howtoBackBtn;
+
+    public void OpenHowTo()
+    {
+        mainGroup.SetActive(false);
+        howtoGroup.SetActive(true);
+        EventSystem.current.SetSelectedGameObject(howtoBackBtn);
+    } 
 
     public void OpenSettings()
     {
@@ -58,6 +68,7 @@ public class PauseMenu : MonoBehaviour
     {
         mainGroup.SetActive(true);
         settingsGroup.SetActive(false);
+        howtoGroup.SetActive(false);
         EventSystem.current.SetSelectedGameObject(main.resumeButton);
     }
 }

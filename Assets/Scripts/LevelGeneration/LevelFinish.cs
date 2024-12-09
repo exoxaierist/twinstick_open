@@ -1,10 +1,9 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
+//unused
 public class LevelFinish : MonoBehaviour
 {
-    public static LevelFinish main;
+    /*public static LevelFinish main;
     public static bool isEnabled = false;
 
     public Sprite enabledSprite;
@@ -36,5 +35,5 @@ public class LevelFinish : MonoBehaviour
     {
         if (!isEnabled) return;
         GameManager.main.FinishLevel();
-    }
+    }*/
 }

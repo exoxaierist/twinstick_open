@@ -10,7 +10,8 @@ public class VendingMachine : MonoBehaviour, IInteractable
     private void Start()
     {
         if (items.Count >0 ) return;
-        for (int i = 0; i < 3; i++)
+        int itemCount = Random.Range(3, 6);
+        for (int i = 0; i < itemCount; i++)
         {
             ShopItemElement instance = Instantiate(Prefab.Get("ShopElement")).GetComponent<ShopItemElement>();
             instance.transform.SetParent(transform);

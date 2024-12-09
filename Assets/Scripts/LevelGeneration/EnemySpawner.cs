@@ -1,10 +1,8 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class EnemySpawner : MonoBehaviour
 {
-    public EnemyList list;
+    /*public EnemyList list;
 
     private void OnDrawGizmos()
     {
@@ -23,5 +21,5 @@ public class EnemySpawner : MonoBehaviour
     public void Spawn()
     {
         Enemy.Spawn(transform.position, EnemySpawnSet.GetID());
-    }
+    }*/
 }

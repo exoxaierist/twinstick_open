@@ -13,6 +13,9 @@ public class InteractPopup : MonoBehaviour
         instance.text.text = text;
         instance.position = position;
         instance.offset = offset;
+
+        Vector3 halfScreen = new(Screen.width * 0.5f, Screen.height * 0.5f, 0);
+        instance.transform.position = (Camera.main.WorldToScreenPoint(position) - halfScreen) * 1.05f + halfScreen + offset;
         return instance;
     }
     public static void Release(InteractPopup instance)

@@ -2,10 +2,11 @@ using UnityEngine;
 
 public class BarrelEnemy : Enemy
 {
+    private bool canShoot = true;
     protected override void OnSpawn()
     {
         base.OnSpawn();
-        attackInfo.bulletMaxDist = 6;
+        attackInfo.bulletMaxDist = 4.5f;
         attackInfo.direction = Vector2.up;
     }
 
@@ -15,12 +16,19 @@ public class BarrelEnemy : Enemy
 
         if (info.attackType != AttackType.BulletHit) return info;
 
-        attackInfo.direction = attackInfo.direction.Rotate(30);
-        for (int i = 0; i < 6; i++)
+        if (canShoot)
         {
-            Bullet.Fire((Vector2)transform.position + attackInfo.direction * 0.5f, attackInfo);
-            attackInfo.direction = attackInfo.direction.Rotate(60);
+            canShoot = false;
+            this.Delay(0.2f, () => canShoot = true);
+            attackInfo.direction = attackInfo.direction.Rotate(30);
+            for (int i = 0; i < 6; i++)
+            {
+                SoundSystem.Play(SoundSystem.ACTION_SHOOT_ENEMY.GetRandom(), transform.position, 0.5f);
+                Bullet.Fire((Vector2)transform.position + attackInfo.direction * 0.5f, attackInfo);
+                attackInfo.direction = attackInfo.direction.Rotate(60);
+            }
         }
+        
 
         return info;
     }

@@ -4,11 +4,11 @@
     {
         ID = PERK_CRITS;
         level = 1;
-        maxLevel = 5;
+        maxLevel = 4;
         OnInstantiate();
     }
 
-    private const float ADD_AMOUNT = 0.1f;
+    private const float ADD_AMOUNT = 0.10f;
 
     public override void OnFirstActive()
     {

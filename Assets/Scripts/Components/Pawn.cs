@@ -1,4 +1,3 @@
-using DG.Tweening;
 using System;
 using System.Collections;
 using UnityEngine;
@@ -22,7 +21,7 @@ public class Pawn : MonoBehaviour
     public bool isJumping = false;
 
     [Header("Collision")]
-    [SerializeField] private LayerMask mask;
+    public LayerMask mask;
     public float radius = 0.5f;
     private readonly float skinWidth = 0.05f;
 

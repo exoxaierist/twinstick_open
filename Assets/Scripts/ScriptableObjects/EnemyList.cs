@@ -1,6 +1,5 @@
-using AYellowpaper.SerializedCollections;
-using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 [CreateAssetMenu(fileName ="EnemyList",menuName ="Enemy List")]
@@ -18,11 +17,24 @@ public class EnemyList : ScriptableObject
         set { _main = value; }
     }
 
-    public SerializedDictionary<string, GameObject> map = new();
+    public List<EnemyInfo> list = new();
 
     public static GameObject Get(string enemyID)
     {
-        if (!main.map.ContainsKey(enemyID)) return null;
-        return main.map[enemyID];
+        return main.list.FirstOrDefault(x => x.id == enemyID).prefab;
+    }
+
+    public static List<string> GetAllID(int roomNumber = 0)
+    {
+        return main.list.Where(x => (x.difficulty <= roomNumber && !x.isBoss)).Select(x=>x.id).ToList();
+    }
+
+    [System.Serializable]
+    public struct EnemyInfo
+    {
+        public string id;
+        public bool isBoss;
+        public int difficulty;
+        public GameObject prefab;
     }
 }

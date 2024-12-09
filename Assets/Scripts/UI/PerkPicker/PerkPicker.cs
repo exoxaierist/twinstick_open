@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
 public class PerkPicker : MonoBehaviour
@@ -19,7 +20,8 @@ public class PerkPicker : MonoBehaviour
         main.gameObject.SetActive(true);
 
         main.CreatePickerUI();
-        main.ShowTab();
+        main.tabAction.Enable();
+        //main.ShowTab();
         EventSystem.current.SetSelectedGameObject(main.pickElements[0].gameObject);
         main.onPickFinish = _onPickFinish;
     }
@@ -27,12 +29,22 @@ public class PerkPicker : MonoBehaviour
     public TextMeshProUGUI titleText;
     public Transform perkElementParent;
     public RectTransform discardElementParent;
+    public RectTransform tabTransform;
     private GameObject lastSelected;
     private bool tabOpen = false;
     public TextMeshProUGUI perkNameText;
     public TextMeshProUGUI perkDescText;
     public TextMeshProUGUI perkLevelText;
     public Selectable confirmButton;
+    public TextMeshProUGUI coinText;
+    public Selectable expandButton;
+    public TextMeshProUGUI expandBtnText;
+    private int expandPrice = 100;
+
+    private bool canReroll = true;
+    public Selectable rerollButton;
+    public TextMeshProUGUI rerollText;
+    private int rerollPrice = 10;
 
     public Perk pickedPerk;
     public Perk pickedDiscard;
@@ -52,16 +64,102 @@ public class PerkPicker : MonoBehaviour
     private List<PerkToDiscard> discardElements = new();
     private List<GameObject> discardEmptyElements = new();
 
+    private PlayerInputActionMap inputMap;
+    private InputAction tabAction;
+
     private void Awake()
     {
         main = this;
+        inputMap = new PlayerInputActionMap();
+        tabAction = inputMap.InGame.Tab;
+        tabAction.performed += OnTabAction;
+    }
+
+    private void Update()
+    {
+        if (Player.perks.Count > 15 && Input.mouseScrollDelta.y != 0)
+        {
+            Vector2 anchorPos = discardElementParent.anchoredPosition;
+            anchorPos.y = Mathf.Clamp(anchorPos.y - Input.mouseScrollDelta.y*30, 0, (Player.maxPerkCount / 5) * 170 - 500);
+            discardElementParent.anchoredPosition = anchorPos;
+        }
+    }
+
+    private void OnTabAction(InputAction.CallbackContext ctx)
+    {
+        if (tabOpen) HideTab(); else ShowTab();
+    }
+
+    public void Reroll()
+    {
+        if (!canReroll) return;
+        Player.coinCount -= rerollPrice;
+
+        SelectPerk(null);
+        SelectDiscard(null);
+
+        for (int i = 0; i < pickElements.Count; i++)
+        {
+            pickElements[i].FadeRemove(i*0.05f) ;
+        }
+        pickElements.Clear();
+
+        this.DelayRealtime(0.45f, () =>
+        {
+            List<string> perkIDList = Player.GetPerkIDList();
+            for (int i = 0; i < 3; i++)
+            {
+                PerkToPick instance = Instantiate(Prefab.Get("PerkToPick")).GetComponent<PerkToPick>();
+                instance.transform.SetParent(perkElementParent);
+                instance.transform.localPosition = Vector3.zero;
+                instance.transform.localScale = Vector3.one;
+                instance.Set(Perk.GetRandomID(perkIDList), this, i);
+
+                pickElements.Add(instance);
+                perkIDList.Add(instance.perkID);
+                canReroll = true;
+            }
+        });
+
+        rerollPrice += 10;
+        rerollText.text = Locale.Get("UI_REROLL") + " <sprite name=\"coin\"> " + rerollPrice;
+        coinText.text = "<sprite name=\"coin\"> " + Player.coinCount.ToString();
+
+        if (rerollPrice > Player.coinCount) {
+            this.DelayRealtime(0.46f, () => { pickElements[0].Select(); });
+            rerollButton.interactable = false; }
+        if (expandPrice > Player.coinCount) expandButton.interactable = false;
+    }
+
+    public void ExpandSlots()
+    {
+        Player.coinCount -= expandPrice;
+        coinText.text = "<sprite name=\"coin\"> " + Player.coinCount.ToString();
+        expandBtnText.text = Locale.Get("UI_EXPAND") + " <sprite name=\"coin\"> " + expandPrice;
+        Player.maxPerkCount += 5;
+        expandPrice += 50;
+        for (int i = 0; i < 5; i++)
+        {
+            GameObject instance = Instantiate(Prefab.Get("PerkToDiscardEmpty"));
+            instance.transform.SetParent(discardElementParent);
+            instance.transform.localScale = Vector3.one;
+            instance.transform.localPosition = Vector3.zero;
+            discardEmptyElements.Add(instance);
+        }
+        DisableDiscard();
+        if (currentPick != null) confirmButton.interactable = true;
+
+        if (rerollPrice > Player.coinCount) rerollButton.interactable = false;
+        if (expandPrice > Player.coinCount || Player.maxPerkCount >= Player.maxMaxPerkCount) {
+            pickElements[0].Select();
+            expandButton.interactable = false; }
     }
 
     public void SelectPerk(PerkToPick pick)
     {  
         if(currentPick != null && currentPick != pick) currentPick.Unpick();
         currentPick = pick;
-        if (pick == null) return;
+        if (pick == null) { confirmButton.interactable = false;  return; }
         pickedPerk = pick.perk;
 
         if (Player.CanAddPerk(pickedPerk))
@@ -88,6 +186,7 @@ public class PerkPicker : MonoBehaviour
     {
         if (discardMode) return;
         discardMode = true;
+        ShowTab();
         confirmButton.interactable = false;
         titleText.text = Locale.Get("UI_CHOOSE_DISCARD");
         titleText.color = ColorLib.highlightPink;
@@ -109,8 +208,28 @@ public class PerkPicker : MonoBehaviour
 
     public void ShowTab()
     {
+        if (tabOpen) return;
+        tabOpen = true;
+        perkElementParent.GetComponent<CanvasGroup>().interactable = false;
+        perkElementParent.GetComponent<CanvasGroup>().blocksRaycasts = false;
+        tabTransform.GetComponent<CanvasGroup>().interactable = true;
+        tabTransform.DOKill();
+        tabTransform.DOAnchorPosY(600, 0.4f).SetUpdate(true).SetEase(Ease.InOutExpo);
+        if(discardElements.Count>0) EventSystem.current.SetSelectedGameObject(discardElements[0].gameObject);
+    }
+
+    public void HideTab()
+    {
+        if (!tabOpen) return;
+        tabOpen = false;
+        perkElementParent.GetComponent<CanvasGroup>().blocksRaycasts = true;
+        perkElementParent.GetComponent<CanvasGroup>().interactable = true;
+        tabTransform.GetComponent<CanvasGroup>().interactable = false;
+        tabTransform.DOKill();
+        tabTransform.DOAnchorPosY(-10, 0.4f).SetUpdate(true).SetEase(Ease.InOutExpo);
         discardElementParent.DOKill();
-        discardElementParent.DOAnchorPosY(380, 0.8f).SetUpdate(true).SetEase(Ease.OutQuint);
+        discardElementParent.DOAnchorPosY(0, 0.1f).SetUpdate(true);
+        EventSystem.current.SetSelectedGameObject(pickElements[0].gameObject);
     }
 
     public void Confirm()
@@ -129,6 +248,7 @@ public class PerkPicker : MonoBehaviour
         RemovePickerUI();
         UIManager.main.canPause = true;
         GameManager.ResumeGame();
+        main.tabAction.Disable();
         this.Delay(0.5f, () => onPickFinish?.Invoke());
         this.Delay(0.5f, () => gameObject.SetActive(false));
     }
@@ -140,6 +260,19 @@ public class PerkPicker : MonoBehaviour
         group.blocksRaycasts = true;
         group.DOFade(1, 0.3f).SetUpdate(true);
         chooseDiscardText.enabled = false;
+        titleText.text = Locale.Get("UI_CHOOSE_PERK");
+        titleText.color = ColorLib.lightBlueGray; 
+
+        perkElementParent.GetComponent<CanvasGroup>().interactable = true;
+        perkElementParent.GetComponent<CanvasGroup>().blocksRaycasts = true;
+        tabTransform.GetComponent<CanvasGroup>().interactable = false;
+
+        rerollPrice = 10;
+        coinText.text = "<sprite name=\"coin\"> " + Player.coinCount.ToString();
+        if (rerollPrice > Player.coinCount) rerollButton.interactable = false; else rerollButton.interactable = true;
+        if (expandPrice > Player.coinCount || Player.maxPerkCount >= Player.maxMaxPerkCount) expandButton.interactable = false; else expandButton.interactable = true;
+        rerollText.text = Locale.Get("UI_REROLL") + " <sprite name=\"coin\"> " + rerollPrice;
+        expandBtnText.text = Locale.Get("UI_EXPAND") + " <sprite name=\"coin\"> " + expandPrice;
 
         List<string> perkIDList = Player.GetPerkIDList();
         for (int i = 0; i < 3; i++)
@@ -164,7 +297,7 @@ public class PerkPicker : MonoBehaviour
 
             discardElements.Add(instance);
         }
-        for (int i = Player.perks.Count; i < 10; i++)
+        for (int i = Player.perks.Count; i < Player.maxPerkCount; i++)
         {
             GameObject instance = Instantiate(Prefab.Get("PerkToDiscardEmpty"));
             instance.transform.SetParent(discardElementParent);
@@ -175,8 +308,8 @@ public class PerkPicker : MonoBehaviour
         perkNameText.text = "";
         perkDescText.text = "";
         perkLevelText.text = "";
-        LayoutRebuilder.ForceRebuildLayoutImmediate(discardElementParent);
-        discardElementParent.anchoredPosition = new(0, -20);
+        LayoutRebuilder.ForceRebuildLayoutImmediate(tabTransform);
+        tabTransform.anchoredPosition = new(0, -20);
     }
 
     private void RemovePickerUI()
@@ -185,6 +318,12 @@ public class PerkPicker : MonoBehaviour
         group.interactable = false;
         group.blocksRaycasts = false;
         group.DOFade(0, 0.3f).SetUpdate(true);
+
+        discardMode = false;
+        pickedPerk = null;
+        pickedDiscard = null;
+        currentDiscard = null;
+        currentPick = null;
 
         for (int i = 0; i < pickElements.Count; i++)
         {

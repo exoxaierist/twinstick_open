@@ -28,6 +28,7 @@ public class PerkToPick : Selectable, ISubmitHandler
 
     private void ShowHover()
     {
+        SoundSystem.Play(SoundSystem.UI_HOVER);
         hovered.gameObject.SetActive(true);
     }
 
@@ -39,6 +40,7 @@ public class PerkToPick : Selectable, ISubmitHandler
     private void Pick() 
     {
         Select();
+        SoundSystem.Play(SoundSystem.UI_SUBMIT);
         selected.gameObject.SetActive(true);
         picker.SelectPerk(this);
     }
@@ -58,7 +60,7 @@ public class PerkToPick : Selectable, ISubmitHandler
         perkImage.sprite = perk.sprite;
         nameText.text = perk.name;
         descText.text = perk.description;
-        if (Player.HasPerk(_perkID)) levelText.text = (Player.GetExistingPerk(_perkID).level+1) + "/" + perk.maxLevel;
+        if (Player.HasPerk(_perkID)) levelText.text = "<sprite name=\"upgrade\"> " + (Player.GetPerk(_perkID).level+1) + "/" + perk.maxLevel;
         else levelText.text = "1/" + perk.maxLevel;
 
         //appear animation
@@ -68,8 +70,9 @@ public class PerkToPick : Selectable, ISubmitHandler
         group.DOFade(1, 0.2f).SetDelay(_index * 0.08f + 0.2f).SetUpdate(true);
     }
 
-    public void FadeRemove()
+    public void FadeRemove(float delay = 0)
     {
-        this.DelayRealtime(0.3f, () => Destroy(gameObject));
+        group.DOFade(0, 0.3f).SetUpdate(true).SetDelay(delay);
+        this.DelayRealtime(0.35f + delay, () => { group.DOKill(); Destroy(gameObject); });
     }
 }

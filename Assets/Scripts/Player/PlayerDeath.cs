@@ -1,4 +1,5 @@
 using DG.Tweening;
+using Steamworks;
 using UnityEngine;
 
 public class PlayerDeath : MonoBehaviour
@@ -15,6 +16,8 @@ public class PlayerDeath : MonoBehaviour
         UIManager.main.HideOverlay();
         UIManager.main.gameOver.SetActive(true);
         UIManager.main.canPause = false;
+        GameManager.PauseGame();
+        SoundSystem.Play(SoundSystem.MISC_DEATH);
         UIManager.main.showHitVignette = false;
 
         original = Player.main.GetDeathSprite();
@@ -49,17 +52,22 @@ public class PlayerDeath : MonoBehaviour
         square.transform.position = original.transform.position + Vector3.up*0.5f;
     }
 
-    private void MakeRunInfo()
+    private void SetStat()
     {
-
+        AttackInfo info = Player.main.deathBlow;
+        if (info.attackerName == "") info.attackerName = "OTHERS";
+        int killCount;
+        SteamUserStats.GetStat("KILL_" + info.attackerName, out killCount);
+        killCount++;
+        SteamUserStats.SetStat("KILL_" + info.attackerName, killCount);
+        SteamUserStats.StoreStats();
     }
-
+     
     private void OnFinish()
     {
         gameObject.SetActive(false);
         copy.transform.DOKill();
         Destroy(copy.gameObject);
-        Time.timeScale = 1;
         UIManager.main.gameOver.SetActive(false);
         UIManager.main.FadeIn(0.01f);
         UIManager.main.TopFadeOut(0.5f);

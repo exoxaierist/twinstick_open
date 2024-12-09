@@ -1,7 +1,6 @@
-using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
-using UnityEngine.Rendering;
 
 [CreateAssetMenu(fileName = "RoomList",menuName ="Room List")]
 public class RoomList : ScriptableObject
@@ -11,6 +10,7 @@ public class RoomList : ScriptableObject
     public List<Room> shopRooms;
     public List<Room> mainRooms;
     public List<Room> smallRooms;
+    private HashSet<Room> appearedMain = new();
 
     [Header("Portals")]
     public Room upPortal;
@@ -36,7 +36,10 @@ public class RoomList : ScriptableObject
     {
         if(type == RoomSize.Main)
         {
-            return mainRooms[Random.Range(0, mainRooms.Count)];
+            Room result = mainRooms.Except(appearedMain).ToArray().GetRandom();
+            appearedMain.Add(result);
+            if (appearedMain.Count == mainRooms.Count) appearedMain.Clear();
+            return result;
         }
         else
         {

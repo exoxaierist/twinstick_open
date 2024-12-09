@@ -1,6 +1,4 @@
-using DG.Tweening;
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class KnightEnemy : Enemy
@@ -38,6 +36,7 @@ public class KnightEnemy : Enemy
             pawn.Jump(nav.GetDirection() + randomOffset, 0.4f);
             //doContactDamage = false;
             //this.Delay(0.4f, () => doContactDamage = true);
+            SoundSystem.Play(SoundSystem.ACTION_JUMP, transform.position, 0.5f);
 
             this.Delay(0.1f, () => { visual.sprite.sortingLayerName = "Overlay"; col.enabled = false; });
             this.Delay(0.3f, () => { visual.sprite.sortingLayerName = "Default"; col.enabled = true; });

@@ -40,21 +40,29 @@ public class CamController : MonoBehaviour
             Quaternion.Euler(0, 0, shakeRotDelta));
     }
 
-    public void Translate(Vector2 delta)
+    public void TranslateSystem(Vector2 delta)
     {
         transform.Translate(delta);
         followPosition += delta;
     }
 
+    public void Shake(float magnitude, Vector2 position)
+    {
+        float dist = Vector2.Distance(position, transform.position);
+        Shake(Mathf.Lerp(magnitude, 0, (dist * 0.2f) + 6));
+    }
+
     public void Shake(float magnitude)
     {
-        magnitude *= 1;
+        //shake position
         DOTween
-            .Shake(() => shakeDelta, x => shakeDelta = x, 0.7f*magnitude+0.4f, magnitude,20)
-            .OnComplete(()=>shakeDelta = Vector2.zero);
+            .Shake(() => shakeDelta, x => shakeDelta = x, 0.7f * magnitude + 0.4f, magnitude, 20)
+            .OnComplete(() => shakeDelta = Vector2.zero);
+        //shake rotation
         DOTween
-            .Shake(() => new(0,shakeRotDelta), x => shakeRotDelta = x.y, 0.7f * magnitude + 0.4f, magnitude*20, 30)
-            .OnComplete(() => DOTween.To(()=>shakeRotDelta,x=>shakeRotDelta=x,0,0.4f));
+            .Shake(() => new(0, shakeRotDelta), x => shakeRotDelta = x.y, 0.7f * magnitude + 0.4f, magnitude * 20, 30)
+            .OnComplete(() => DOTween.To(() => shakeRotDelta, x => shakeRotDelta = x, 0, 0.4f));
+        //gamepad rumble
         if (Gamepad.current != null)
         {
             Gamepad.current.SetMotorSpeeds(magnitude * 10, magnitude * 5);
@@ -65,7 +73,7 @@ public class CamController : MonoBehaviour
     private void SetCameraTransform()
     {
         camera.transform.SetPositionAndRotation(
-            (Vector3)(followPosition + shakeDelta) + new Vector3(0,0,-10), 
+            (Vector3)(followPosition + shakeDelta) + new Vector3(0, 0, -10),
             Quaternion.Euler(0, 0, shakeRotDelta));
     }
 

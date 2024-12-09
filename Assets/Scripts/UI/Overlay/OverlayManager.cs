@@ -7,9 +7,11 @@ public class OverlayManager : MonoBehaviour
 {
     private GameObjectPool perkUIPool = new("PerkUI");
     private GameObjectPool perkUIEmptyPool = new("PerkUIEmpty");
+    private GameObjectPool perkUILockedPool = new("PerkUILocked");
 
     private List<PerkUI> perkUIList = new();
     private List<GameObject> perkUIEmptyList = new();
+    private List<GameObject> perkUILockedList = new();
 
     public Transform perkUIParent;
 
@@ -37,6 +39,14 @@ public class OverlayManager : MonoBehaviour
             }
             perkUIEmptyList.Clear();
         }
+        if (perkUILockedList.Count > 0)
+        {
+            for (int i = 0; i < perkUILockedList.Count; i++)
+            {
+                perkUILockedPool.Release(perkUILockedList[i].gameObject);
+            }
+            perkUILockedList.Clear();
+        }
 
         //create new perk UIs
         for (int i = 0; i < Player.perks.Count; i++)
@@ -49,12 +59,19 @@ public class OverlayManager : MonoBehaviour
 
             if (i == 0) EventSystem.current.SetSelectedGameObject(ui.gameObject);
         }
-        for (int i = Player.perks.Count; i < 10; i++)
+        for (int i = Player.perks.Count; i < Player.maxPerkCount; i++)
         {
             GameObject instance = perkUIEmptyPool.Get();
             instance.transform.SetParent(transform);
             instance.transform.localScale = Vector3.one;
             perkUIEmptyList.Add(instance);
+        }
+        for (int i = Player.maxPerkCount; i < Player.maxMaxPerkCount; i++)
+        {
+            GameObject instance = perkUILockedPool.Get();
+            instance.transform.SetParent(transform);
+            instance.transform.localScale = Vector3.one;
+            perkUILockedList.Add(instance);
         }
         perkInfoBox.transform.SetAsLastSibling();
     }

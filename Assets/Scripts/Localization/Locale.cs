@@ -54,7 +54,8 @@ public static class Locale
                 dictList[x-1].Add(entries[0], entries[x]
                     .Replace("<heart>","<sprite name=\"heart\">")
                     .Replace("<coin>","<sprite name=\"coin\">")
-                    .Replace("<shield>", "<sprite name=\"shield\">"));
+                    .Replace("<shield>", "<sprite name=\"shield\">")
+                    .Replace("<bnorth>", "<sprite name=\"buttonNorth\">"));
             }
         }
     }

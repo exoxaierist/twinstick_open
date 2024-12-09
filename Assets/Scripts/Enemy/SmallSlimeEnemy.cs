@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class SmallSlimeEnemy : Enemy
@@ -8,6 +6,7 @@ public class SmallSlimeEnemy : Enemy
     {
         base.OnSpawn();
         pawn.AddForce(Random.insideUnitCircle*10);
+
         SetMovementBehaviour(MovementBehaviour.FollowPlayer);
     }
 

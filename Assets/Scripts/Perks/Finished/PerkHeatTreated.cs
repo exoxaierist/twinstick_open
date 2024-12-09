@@ -11,14 +11,15 @@ public class PerkHeatTreated : Perk
     public override void OnFirstActive()
     {
         PlayerStats.additionalHealth += 20 * level;
-        if (Player.main!=null) Activate();
-        else Player.onPlayerSpawn += Activate;
+        if (Player.main!=null) QueuePlayerDamage();
+        else Player.onPlayerSpawn += QueuePlayerDamage;
     }
 
     public override void OnLevelUp()
     {
         PlayerStats.additionalHealth += 20;
-        Player.main.hp.Damage(new () { damage = 10 });
+        if (Player.main != null) QueuePlayerDamage();
+        else Player.onPlayerSpawn += QueuePlayerDamage;
     }
 
     public override void OnDiscard()
@@ -27,9 +28,9 @@ public class PerkHeatTreated : Perk
         Player.main.hp.Heal(new() { damage = 10,isHeal = true });
     }
 
-    private void Activate()
+    private void QueuePlayerDamage()
     {
         Player.main.hp.Damage(new() { damage = 10 });
-        Player.onPlayerSpawn -= Activate;
+        Player.onPlayerSpawn -= QueuePlayerDamage;
     }
 }

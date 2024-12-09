@@ -35,7 +35,7 @@ public class BombaEnemy : Enemy
 
     protected override AttackInfo OnReceiveAttack(AttackInfo info)
     {
-        StartCoroutine(StartTicking());
+        if(!isTicking && info.attackType == AttackType.BulletHit) StartCoroutine(StartTicking());
         info = base.OnReceiveAttack(info);
         info.damage = 0;
         return info;
@@ -43,8 +43,9 @@ public class BombaEnemy : Enemy
 
     private IEnumerator StartTicking()
     {
-        if (isTicking) yield break;
         SetMovementBehaviour(MovementBehaviour.None);
+        SoundSystem.Play(SoundSystem.ENEMY_CRACKLE, transform.position, 0.5f);
+        GetComponent<Collider2D>().enabled = false;
         isTicking = true;
         canBeHit = false;
         for (int i = 0; i < 5; i++)

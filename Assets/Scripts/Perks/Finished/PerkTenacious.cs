@@ -7,4 +7,7 @@ public class PerkTenacious : Perk
         maxLevel = 1;
         OnInstantiate();
     }
+
+    public bool isOnCooldown = false;
+    public float cooldown = 5;
 }

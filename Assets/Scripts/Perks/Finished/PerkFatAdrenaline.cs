@@ -37,8 +37,8 @@ public class PerkFatAdrenaline : Perk
 
     private void OnHpChange()
     {
-        if (Player.main==null && Player.main.hp == null) return;
-        if (Player.main.hp.health > 20)
+        if (Player.main==null) return;
+        if (Player.main.hp.health > 50)
         {
             if (damageBoostApplied) { PlayerStats.damageMul -= 0.5f; damageBoostApplied = false; }
         }

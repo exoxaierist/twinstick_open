@@ -1,6 +1,5 @@
- using System;
+using System;
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class Hp : MonoBehaviour
@@ -74,7 +73,7 @@ public class Hp : MonoBehaviour
         for (int i = 0; i < 6; i++)
         {
             yield return new WaitForSeconds(0.7f);
-            if (isDead) yield break;
+            if (isDead || health <= info.damage) { visual.FireEffect(false); yield break; }
             Damage(info);
         }
         if (TryGetComponent(out visual)) visual.FireEffect(false);

@@ -36,7 +36,7 @@ public class Player : MonoBehaviour
     //components
     private PlayerInput input;
     private VisualHandler visual;
-    private Pawn pawn;
+    public Pawn pawn;
     public Weapon weapon;
     public Hp hp;
 
@@ -78,7 +78,8 @@ public class Player : MonoBehaviour
     }
 
     //perks
-    public const int maxPerkCount = 10;
+    public const int maxMaxPerkCount = 35;
+    public static int maxPerkCount = 10;
     public static List<Perk> perks = new();
 
     //events
@@ -95,6 +96,8 @@ public class Player : MonoBehaviour
         coinCount = 0;
         onPerkChange = null;
         onPlayerSpawn = null;
+        onEnemyKill = null;
+        PerkUndying.used = false;
     }
 
     private void OnEnable()
@@ -129,11 +132,6 @@ public class Player : MonoBehaviour
         InputAttack();
         InputAim();
         FindInteractable();
-
-        if (Input.GetKeyDown(KeyCode.J))
-        {
-            Item.SpawnPerk(Perk.GetRandomID(Player.GetPerkIDList()), transform.position, UnityEngine.Random.insideUnitCircle);
-        }
     }
 
     public void UpdateAttackInfo()
@@ -141,9 +139,9 @@ public class Player : MonoBehaviour
         attackInfo.attacker = Entity.Player;
         attackInfo.attackerName = Locale.Get("PLAYER");
         attackInfo.damage = (int)(10 * PlayerStats.damageMul);
-        attackInfo.knockBack = 1;
+        attackInfo.knockBack = 5 * PlayerStats.enemyKnockbackMul;
         attackInfo.bulletSpeed = 10;
-        attackInfo.bulletMaxDist = 5 * PlayerStats.attackDistance;
+        attackInfo.bulletMaxDist = 7 * PlayerStats.attackDistance;
 
         attackInfo.isStoned = HasPerk(Perk.PERK_STONED);
         attackInfo.stoneStrength = 1;
@@ -151,18 +149,23 @@ public class Player : MonoBehaviour
         if (HasPerk(Perk.PERK_HOMING))
         {
             attackInfo.isHoming = true;
-            attackInfo.homingStrength = GetExistingPerk(Perk.PERK_HOMING).level;
+            attackInfo.homingStrength = GetPerk(Perk.PERK_HOMING).level;
         }
         else attackInfo.isHoming = false;
 
-        if (HasPerk(Perk.PERK_SALVO)) attackInfo.additionalBurst = GetExistingPerk(Perk.PERK_SALVO).level;
-        if (HasPerk(Perk.PERK_CHAINREACTION)) attackInfo.chainCount = GetExistingPerk(Perk.PERK_CHAINREACTION).level;
-        if (HasPerk(Perk.PERK_BOUNCE)) attackInfo.bounceCount = GetExistingPerk(Perk.PERK_BOUNCE).level;
+        if (HasPerk(Perk.PERK_SALVO)) attackInfo.additionalBurst = GetPerk(Perk.PERK_SALVO).level;
+        if (HasPerk(Perk.PERK_CHAINREACTION)) attackInfo.chainCount = GetPerk(Perk.PERK_CHAINREACTION).level;
+        if (HasPerk(Perk.PERK_BOUNCE)) attackInfo.bounceCount = GetPerk(Perk.PERK_BOUNCE).level;
+        attackInfo.penetrate = HasPerk(Perk.PERK_PENETRATION);
+
+        if (HasPerk(Perk.PERK_FLAME)) attackInfo.attackEffect = AttackEffect.Fire;
+        else attackInfo.attackEffect = AttackEffect.None;
     }
 
     #region Player Inputs
     public void InputJump(InputAction.CallbackContext context)
     {
+        if (!HasPerk(Perk.PERK_JUMPER)) return;
         if (context.phase != InputActionPhase.Performed) return;
         if (isJumping) return;
         if (isInAnimation) return;
@@ -278,16 +281,11 @@ public class Player : MonoBehaviour
         onPerkChange?.Invoke();
     }
 
-    public static bool CanAddPerk()
-    {
-        return perks.Count < maxPerkCount;
-    }
-
     public static bool CanAddPerk(Perk perk)
     {
         if (perk == null) return false;
 
-        Perk existing = GetExistingPerk(perk.ID);
+        Perk existing = GetPerk(perk.ID);
         if (existing == null) return perks.Count < maxPerkCount;
         if (existing != null && existing.level == existing.maxLevel) return false;
         return true;
@@ -296,18 +294,11 @@ public class Player : MonoBehaviour
     public static void AddPerk(Perk perk)
     {
         if (!CanAddPerk(perk)) return;
-        Perk existing = GetExistingPerk(perk.ID);
+        Perk existing = GetPerk(perk.ID);
         //level up
         if (existing != null) { existing.level++; existing.OnLevelUp(); }
         //add new perk
         else { perks.Add(perk); perk.OnFirstActive(); }
-        OnPerkChange();
-    }
-
-    public static void RemovePerk(int index)
-    {
-        perks[index].OnDiscard();
-        perks.RemoveAt(index);
         OnPerkChange();
     }
 
@@ -327,18 +318,12 @@ public class Player : MonoBehaviour
         AddPerk(newPerk);
     }
 
-    public static void RemoveAndAddPerk(int discardIndex, Perk newPerk)
-    {
-        perks.RemoveAt(discardIndex);
-        AddPerk(newPerk);
-    }
-
     public static bool HasPerk(string ID)
     {
-        return GetExistingPerk(ID) != null;
+        return GetPerk(ID) != null;
     }
 
-    public static Perk GetExistingPerk(string ID)
+    public static Perk GetPerk(string ID)
     {
         foreach (Perk perk in perks)
         {
@@ -436,25 +421,50 @@ public class Player : MonoBehaviour
         else { UIManager.main.HitVignette(); }
 
         //tank
-        if (hp.health > 1 && HasPerk(Perk.PERK_TANK) && info.attackType == AttackType.Contact)
+        if (HasPerk(Perk.PERK_TANK) && info.attackType == AttackType.Contact)
         {
-            info.damage = Mathf.Max(1, info.damage - 2 * GetExistingPerk(Perk.PERK_TANK).level);
+            info.damage = Mathf.Max(1, info.damage - 2 * GetPerk(Perk.PERK_TANK).level);
         }
 
         //tenacious
-        if (HasPerk(Perk.PERK_TENACIOUS))
+        PerkTenacious perkTenacious = GetPerk(Perk.PERK_TENACIOUS) as PerkTenacious;
+        if (hp.health > 1 && perkTenacious != null && !perkTenacious.isOnCooldown)
         {
             if(info.damage >= hp.health)
             {
+                perkTenacious.isOnCooldown = true;
+                this.Delay(perkTenacious.cooldown, () => perkTenacious.isOnCooldown = false);
                 info.damage = hp.health - 1;
                 info.attackEffect = AttackEffect.None;
+            }
+        }
+
+        //undying
+        if(!PerkUndying.used && HasPerk(Perk.PERK_UNDYING) && info.damage >= hp.health)
+        {
+            info.damage = 0;
+            info.attackEffect = AttackEffect.None;
+            hp.Heal(new() { damage = 20 - hp.health, isHeal = true });
+            PerkUndying.used = true;
+        }
+
+        //flare perk
+        if (HasPerk(Perk.PERK_FLARE))
+        {
+            Collider2D[] hits = Physics2D.OverlapCircleAll(transform.position, 2,LayerMask.GetMask("Enemy"));
+            foreach (Collider2D hit in hits)
+            {
+                if(hit.TryGetComponent(out Pawn otherPawn))
+                {
+                    otherPawn.AddForce((hit.transform.position - transform.position).normalized * 10);
+                }
             }
         }
 
         //misc effects
         canBeHit = false;
         visual.sprite.HitEffect();
-        pawn.AddForce(info.direction * 5);
+        pawn.AddForce(info.direction * 5 * info.knockBack);
         this.Delay(immuneTimer, () => canBeHit = true);
         if (godMode) return new() { damage = 0 };
         return info;
@@ -471,11 +481,11 @@ public class Player : MonoBehaviour
     #region Traversal
     public void MoveRoom(Direction outDir, Vector2 outPos)
     {
-        CamController.main.Translate(outPos - (Vector2)transform.position);
+        CamController.main.TranslateSystem(outPos - (Vector2)transform.position);
         transform.position = outPos;
         playerAimPosition = (Vector2)transform.position + (playerAimDirection * 3);
         Vector2 moveInput = outDir == Direction.Up ? new(0, 1) : outDir == Direction.Down ? new(0, -1) : outDir == Direction.Right ? new(1, 0) : new(-1, 0);
-        StartCoroutine(MoveForSeconds(0.6f, moveInput));
+        StartCoroutine(MoveForSeconds(1, moveInput));
     }
 
     private IEnumerator MoveForSeconds(float second, Vector2 moveInput)

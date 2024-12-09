@@ -35,8 +35,8 @@ public class EnemySpawnEffect : MonoBehaviour
         }
         flickerSequence.Play().OnComplete(()=>
         {
-            LevelManager.currentRoom.enemyCount -= 1;
             onFlickerFinish?.Invoke();
+            LevelManager.currentRoom.enemyCount -= 1;
             effectPool.Release(gameObject);
         });
     }

@@ -12,22 +12,37 @@ public class RunResult : MonoBehaviour
     {
         StringBuilder builder = new();
         builder.Append(Locale.Get("UI_KILLEDBY"));
-        builder.Append(Player.main.deathBlow.attackerName);
+        builder.Append("\n");
+        builder.Append(Locale.Get(Player.main.deathBlow.attackerName));
         builder.Append("\n");
         builder.Append("\n");
         builder.Append(Locale.Get("UI_CHAMBERSCLEARED"));
-        builder.Append(LevelManager.roomNumber - 1);
+        builder.Append("\n");
+        builder.Append(LevelManager.currentRoomNumber - 1);
         builder.Append("\n");
         builder.Append("\n");
         builder.Append(Locale.Get("UI_PERKSCARRIED"));
         builder.Append("\n");
-        for (int i = 0; i < Player.perks.Count; i++)
+        if(Player.perks.Count > 15)
         {
-            if(i!=0) builder.Append(", ");
-            builder.Append(Player.perks[i].name);
-            builder.Append("\n");
+            for (int i = 0; i < Player.perks.Count; i++)
+            {
+                if(i!=0) builder.Append(" / ");
+                builder.Append(Player.perks[i].name);
+            }
         }
+        else
+        {
+            for (int i = 0; i < Player.perks.Count; i++)
+            {
+                builder.Append(Player.perks[i].name);
+                builder.Append("\n");
+            }
+        }
+        
         builder.Append("\n");
+        builder.Append("\n");
+        builder.Append(Locale.Get("UI_PRESSTOFINISH"));
          
         runCount.text = builder.ToString();
         gameObject.SetActive(true);
@@ -36,9 +51,11 @@ public class RunResult : MonoBehaviour
     public void FinishResult()
     {
         UIManager.main.TopFadeIn(0.5f);
-        this.Delay(0.6f, () => 
+        this.DelayRealtime(0.6f, () => 
         {
             DOTween.Clear();
+            Player.Reset();
+            GameManager.ResumeGame();
             SceneManager.LoadScene("Menu");
         });
     }
@@ -46,6 +63,6 @@ public class RunResult : MonoBehaviour
     private void Update()
     {
         if (!enabled) return;
-        if (Input.GetKeyDown(KeyCode.Return)) FinishResult();
+        if (Input.anyKeyDown) FinishResult();
     }
 }

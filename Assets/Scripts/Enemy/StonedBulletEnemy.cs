@@ -24,23 +24,27 @@ public class StonedBulletEnemy : Enemy
     protected override void OnIntervalUpdate()
     {
         CalcLineOfSight();
-    }
-
-    private void Update()
-    {
-        Movement();
-
-        if (!isActive) return;
         if (hasLineOfSight)
         {
             SetMovementBehaviour(MovementBehaviour.Wander);
             shootRoutine ??= StartCoroutine(Shoot());
         }
-        else
+        else if (Vector2.Distance(Player.main.transform.position, transform.position) < 10)
         {
             SetMovementBehaviour(MovementBehaviour.FollowPlayer);
             if (shootRoutine != null) { StopCoroutine(shootRoutine); shootRoutine = null; }
         }
+        else
+        {
+            SetMovementBehaviour(MovementBehaviour.Wander);
+            if (shootRoutine != null) { StopCoroutine(shootRoutine); shootRoutine = null; }
+        }
+    }
+
+    private void Update()
+    {
+        Movement();
+        SetSpriteDirection(SpriteDirMode.FaceDirection);
     }
 
     private IEnumerator Shoot()
@@ -52,6 +56,7 @@ public class StonedBulletEnemy : Enemy
             for (int i = 0; i < count; i++)
             {
                 attackInfo.direction = transform.GetDirToPlayer();
+                SoundSystem.Play(SoundSystem.ACTION_SHOOT_ENEMY.GetRandom(), transform.position, 0.5f);
                 Bullet.Fire((Vector2)transform.position + attackInfo.direction * 0.5f, attackInfo);
                 yield return new WaitForSeconds(2);
             }

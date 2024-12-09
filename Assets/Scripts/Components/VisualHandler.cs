@@ -1,7 +1,6 @@
 using DG.Tweening;
 using System;
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 [ExecuteAlways]
@@ -11,6 +10,8 @@ public class VisualHandler : MonoBehaviour
     public SpriteRenderer shadow;
 
     private Vector2 visualOriginPos;
+
+    public bool makeWalkSound = false;
 
     [Range(0,2)] public float shadowSize = 0.8f;
     [Range(-1,1)] public float shadowOffset;
@@ -112,6 +113,11 @@ public class VisualHandler : MonoBehaviour
         walkCallable = false;
         walkMotionTilt *= -1;
 
+        if (makeWalkSound)
+        {
+            SoundSystem.Play(SoundSystem.PLAYER_WALK.GetRandom(), transform.position,0.3f);
+        }
+
         walkTween = DOTween
             .To(x=>height=x, 0, 0.25f, 0.12f)
             .SetEase(Ease.OutQuad)
@@ -130,7 +136,7 @@ public class VisualHandler : MonoBehaviour
         if (state)
         {
             if (fireCoroutine == null) fireCoroutine = StartCoroutine(FireEffect());
-            sprite.color = Color.red;
+            sprite.color = ColorLib.burnColor;
         }
         else
         {

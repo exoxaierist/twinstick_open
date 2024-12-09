@@ -9,6 +9,9 @@ public class ConnectionSocket : MonoBehaviour
     public Vector2 offset;
     public int length = 1;
 
+    public int appliedOffset;
+    public int appliedLength;
+
     private void OnDrawGizmos()
     {
         Vector2 dir = Vector2.zero;

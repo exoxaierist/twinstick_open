@@ -31,6 +31,7 @@ public class UIManager : MonoBehaviour
     public Transform minimapParent;
     public Transform shopUIParent;
     public Transform perkParent;
+    public Transform bossHpParent;
     public GameObject gameOver;
     public RunResult runResult;
     public ShopPopup shopPopup;

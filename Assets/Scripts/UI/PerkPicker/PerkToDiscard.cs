@@ -1,3 +1,4 @@
+using DG.Tweening;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -12,7 +13,9 @@ public class PerkToDiscard : Selectable, ISubmitHandler
     public Perk perk;
     private PerkPicker picker;
 
-    public override void OnPointerEnter(PointerEventData eventData) => Select();
+    private bool selectWithMouse = false;
+
+    public override void OnPointerEnter(PointerEventData eventData){ selectWithMouse = true; Select(); }
     public override void OnPointerDown(PointerEventData eventData) => Pick();
     public override void OnSelect(BaseEventData eventData) => ShowHover();
     public override void OnDeselect(BaseEventData eventData) => HideHover();
@@ -20,27 +23,33 @@ public class PerkToDiscard : Selectable, ISubmitHandler
 
     private void ShowHover() 
     {
+        SoundSystem.Play(SoundSystem.UI_HOVER);
         hovered.gameObject.SetActive(true);
         picker.perkNameText.text = perk.name;
         picker.perkDescText.text = perk.description;
         picker.perkLevelText.text = perk.level + "/" + perk.maxLevel;
+        picker.discardElementParent.DOKill();
+        if(Player.perks.Count>15 && !selectWithMouse) picker.discardElementParent.DOAnchorPosY(Mathf.Clamp(-((RectTransform)transform).anchoredPosition.y - 145,0,(Player.maxPerkCount/5)*170 - 500),0.1f).SetUpdate(true);
     }
 
     private void HideHover() 
     {
         hovered.gameObject.SetActive(false);
+        selectWithMouse = false;
     }
 
     private void Pick()
     {
         Select();
         if (!picker.discardMode) return;
+        SoundSystem.Play(SoundSystem.UI_SUBMIT);
         selected.gameObject.SetActive(true);
         picker.SelectDiscard(this);
     }
 
     public void Unpick()
     {
+        if (selected == null) return;
         selected.gameObject.SetActive(false);
     }
 

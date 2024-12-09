@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class RoomPortal : Room
@@ -9,7 +7,7 @@ public class RoomPortal : Room
 
     private void OnDrawGizmos()
     {
-        if (playerSpawn == null) return;
+        if (playerSpawn == null) return; 
         Gizmos.color = Color.blue;
         Gizmos.DrawSphere(playerSpawn.position, 0.5f);
     }
@@ -19,6 +17,6 @@ public class RoomPortal : Room
         pathBlockTilemap = roomAreaTilemap;
     }
 
-    public void Lock() => GetComponentInChildren<PortalDoor>().Lock();
+    public void Lock() => GetComponentInChildren<PortalDoor>().Close();
     public void Open() => GetComponentInChildren<PortalDoor>().Open();
 }

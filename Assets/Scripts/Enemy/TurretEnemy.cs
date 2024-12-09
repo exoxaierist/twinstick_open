@@ -10,7 +10,7 @@ public class TurretEnemy : Enemy
     {
         base.OnSpawn();
         shootRoutine = StartCoroutine(Shoot());
-        attackInfo.bulletSpeed = Bullet.ENEMY_BULLET_SPEED_FAST;
+        attackInfo.bulletSpeed = Bullet.enemyBulletSpeedFast;
         attackInfo.bulletMaxDist = 20;
     }
 
@@ -41,11 +41,19 @@ public class TurretEnemy : Enemy
         {
             if (hasLineOfSight && isActive)
             {
-                activeLaser = Laser.Spawn(transform.position+Vector3.up * 0.2f, transform.GetDirToPlayer(),thickness:0.1f);
+                SetMovementBehaviour(MovementBehaviour.None);
                 attackInfo.direction = transform.GetDirToPlayer();
+                activeLaser = Laser.Spawn((Vector2)transform.position + attackInfo.direction * 0.5f, attackInfo.direction,thickness:0.1f);
+                knockBackAlpha = 0;
                 this.Delay(1.3f, () =>
                 {
-                    if(!isDead) Bullet.Fire((Vector2)transform.position + attackInfo.direction * 0.5f, attackInfo);
+                    if(!isDead)
+                    {
+                        SoundSystem.Play(SoundSystem.ACTION_SHOOT_ENEMY.GetRandom(), transform.position, 0.5f);
+                        Bullet.Fire((Vector2)transform.position + attackInfo.direction * 0.5f + Vector2.up * 0.5f, attackInfo);
+                        knockBackAlpha = 1;
+                        SetMovementBehaviour(MovementBehaviour.Wander);
+                    }
                 });
                 yield return new WaitForSeconds(4);
             }

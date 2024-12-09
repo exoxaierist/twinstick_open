@@ -1,5 +1,4 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class MortarEnemy : Enemy
@@ -7,7 +6,6 @@ public class MortarEnemy : Enemy
     protected override void OnSpawn()
     {
         base.OnSpawn();
-        knockBackAlpha = 0.5f;
         SetMovementBehaviour(MovementBehaviour.Wander);
     }
 
@@ -18,7 +16,6 @@ public class MortarEnemy : Enemy
 
     private void Update()
     {
-        SetSpriteDirection(SpriteDirMode.FacePlayer);
         Movement();
     }
 

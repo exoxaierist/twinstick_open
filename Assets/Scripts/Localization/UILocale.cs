@@ -11,6 +11,11 @@ public class UILocale : MonoBehaviour
     private void OnDestroy() => Locale.onLocaleChange -= UpdateLocale;
     private void OnValidate() => UpdateLocale();
 
+    private void Start()
+    {
+        UpdateLocale();
+    }
+
     [ContextMenu("Update Locale")]
     private void UpdateLocale()
     {

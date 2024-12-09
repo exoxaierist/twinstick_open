@@ -8,7 +8,7 @@
         OnInstantiate();
     }
 
-    private const float ADD_AMOUNT = 0.5f;
+    private const float ADD_AMOUNT = 0.25f;
 
     public override void OnFirstActive()
     {

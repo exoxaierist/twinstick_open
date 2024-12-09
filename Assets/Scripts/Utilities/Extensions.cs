@@ -1,12 +1,20 @@
-using System.Collections;
+using DG.Tweening;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
-using DG.Tweening;
-using UnityEngine.Rendering;
-using System;
 
 public static class Extensions
 {
+    public static T GetRandom<T>(this T[] array)
+    {
+        return array[UnityEngine.Random.Range(0, array.Length)];
+    }
+
+    public static T GetRandom<T>(this List<T> array)
+    {
+        return array[UnityEngine.Random.Range(0, array.Count)];
+    }
+
     public static Vector3 ToVector(this Direction direction)
     {
         if(direction == Direction.Up) return Vector2.up;
@@ -35,20 +43,21 @@ public static class Extensions
 
     public static Vector2 RightOrtho(this Vector2 vector)
     {
-        return new(-vector.x, vector.y);
+        return new(-vector.y, vector.x);
     }
 
     public static Vector2 LeftOrtho(this Vector2 vector)
     {
-        return new(vector.x, -vector.y);
+        return new(vector.y, -vector.x);
     }
 
-    public static void HitEffect(this SpriteRenderer sprite)
+    public static void HitEffect(this SpriteRenderer sprite, bool doFlinch = true)
     {
         sprite.material.SetFloat("_Solidity", 1);
         DOTween.To(x => { if (sprite != null) sprite.material.SetFloat("_Solidity", x); }, 1, 0, 0.05f).SetDelay(0.1f);
-        
+
         //flinch
+        if (!doFlinch) return;
         sprite.transform.DORewind();
         sprite.transform.DOPunchRotation(new(0, 0, UnityEngine.Random.Range(-15f, 15f)),0.2f);
         sprite.transform.DOPunchScale(new(0.2f, 0.2f, 0), 0.3f);
@@ -61,12 +70,13 @@ public static class Extensions
 
     public static Vector2 Rotate(this Vector2 vector, float degrees)
     {
+        if (degrees == 0) return vector;
         return Quaternion.Euler(0, 0, degrees) * vector;
     }
 
-    public static void Delay(this MonoBehaviour mono, float duration, Action callback)
+    public static Coroutine Delay(this MonoBehaviour mono, float duration, Action callback)
     {
-        mono.StartCoroutine(Utility.DelayCoroutine(duration, callback));
+        return mono.StartCoroutine(Utility.DelayCoroutine(duration, callback));
     }
 
     public static void DelayRealtime(this MonoBehaviour mono, float duration, Action callback)
@@ -88,18 +98,6 @@ public static class Extensions
     {
         col.a = alpha;
         return col;
-    }
-
-    public static AttackInfo AttackInfo(this Enemy enemy)
-    {
-        return new()
-        {
-            attacker = Entity.Enemy,
-            attackerName = Locale.Get(enemy.enemyID),
-            damage = Bullet.DEFAULT_DAMAGE,
-            knockBack = Bullet.DEFAULT_KNOCKBACK,
-            bulletSpeed = Bullet.ENEMY_BULLET_SPEED,
-        };
     }
 }
 

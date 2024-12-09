@@ -33,6 +33,7 @@ public struct AttackInfo
     public bool doBend;
     public float bendStrength; //positive to right negative to left
     public int bounceCount;
+    public bool penetrate;
 
     public AttackInfo Damage(int amount) { damage = amount; return this; }
     public AttackInfo Distance(float dist) { bulletMaxDist = dist; return this; }
@@ -42,14 +43,18 @@ public struct AttackInfo
 //passed for when checking if bullet hit something
 public struct BulletHit
 {
-    public bool hit;
-    public float dist;
+    public RaycastHit2D hitInfo;
     public HitColliderType type;
-    public Vector2 hitPoint;
-    public Vector2 hitNormal;
+    public bool isHit;
+    public float dist;
 
-    public Collider2D collider;
     public Hp hp;
+}
+
+public struct BulletFinish
+{
+    public Vector2 position;
+    public Vector2 direction;
 }
 
 //passed to weapon class when player tries to attack

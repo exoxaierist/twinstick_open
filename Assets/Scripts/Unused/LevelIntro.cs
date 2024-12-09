@@ -1,10 +1,8 @@
 using UnityEngine;
-using TMPro;
-using DG.Tweening;
 
 public class LevelIntro : MonoBehaviour
 {
-    private static LevelIntro main;
+    /*private static LevelIntro main;
 
     public TextMeshProUGUI text;
     public TextMeshProUGUI text2;
@@ -34,5 +32,5 @@ public class LevelIntro : MonoBehaviour
         }
 
         main.Delay(1.5f, () => main.group.DOFade(0, 0.5f));
-    }
+    }*/
 }

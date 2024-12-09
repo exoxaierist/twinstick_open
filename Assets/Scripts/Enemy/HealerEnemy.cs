@@ -1,5 +1,6 @@
 using DG.Tweening;
 using System.Collections;
+using System.Linq;
 using UnityEngine;
 
 public class HealerEnemy : Enemy
@@ -12,7 +13,8 @@ public class HealerEnemy : Enemy
     {
         base.OnSpawn();
         attackInfo.isHeal = true;
-        attackInfo.damage = 10;
+        attackInfo.damage = 5;
+        SetMovementBehaviour(MovementBehaviour.Wander);
     }
 
     protected override void OnActivation()
@@ -36,25 +38,30 @@ public class HealerEnemy : Enemy
     {
         if(moveBehaviour == MovementBehaviour.None) pawn.MoveInput(nav.GetDirection());
         else { Movement(); }
-        SetSpriteDirection(SpriteDirMode.FaceDirection);
     }
 
     protected override void OnIntervalUpdate()
     {
-        Collider2D[] hits = Physics2D.OverlapCircleAll(transform.position, 10, LayerMask.GetMask("Enemy"));
-        GameObject closest = null;
-        float closestDist = 100000;
-        foreach (Collider2D collider in hits)
-        {
-            if (collider.gameObject ==gameObject || Vector2.Distance(collider.transform.position, transform.position) > closestDist) continue;
-            closestDist = Vector2.Distance(collider.transform.position, transform.position);
-            closest = collider.gameObject;
-        }
-        if (closest == null || closestDist<1.5f) SetMovementBehaviour(MovementBehaviour.Wander);
+        Hp[] hitsHp = Physics2D.OverlapCircleAll(transform.position, 10, LayerMask.GetMask("Enemy"))
+            .Select(x => x.GetComponent<Hp>()).Where(x => x != null && !x.gameObject.CompareTag("Healer")).ToArray();
+        if (hitsHp.Length == 0) SetMovementBehaviour(MovementBehaviour.Wander);
         else
         {
-            SetMovementBehaviour(MovementBehaviour.None);
-            nav.FindPath(closest.transform.position);
+            float min = hitsHp.Min(x => x.health / x.maxHealth);
+            if (min != 1)
+            {
+                Hp otherHp = hitsHp.FirstOrDefault(x => (x.health / x.maxHealth) == min);
+                if (Vector2.Distance(transform.position, otherHp.transform.position) < 2)
+                {
+                    SetMovementBehaviour(MovementBehaviour.Wander);
+                }
+                else
+                {
+                    SetMovementBehaviour(MovementBehaviour.None);
+                    nav.FindPath(otherHp.transform.position);
+                }
+            }
+            else SetMovementBehaviour(MovementBehaviour.Wander);
         }
     }
 

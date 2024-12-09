@@ -1,8 +1,3 @@
-using JetBrains.Annotations;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-
 public class MetaRoomInfo
 {
     public MetaRoom metaRoom;
@@ -19,4 +14,5 @@ public class MetaRoomInfo
     public bool leftConnected;
 
     public RoomType type;
+    public string bossId;
 }

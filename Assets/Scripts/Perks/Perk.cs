@@ -20,6 +20,18 @@ public class Perk
     public const string PERK_TANK = "PERK_TANK";
     public const string PERK_SPIKE = "PERK_SPIKE";
     public const string PERK_REGEN = "PERK_REGEN";
+    public const string PERK_GOLDDIGGER = "PERK_GOLDDIGGER";
+    public const string PERK_JUMPER = "PERK_JUMPER";
+    public const string PERK_BULLETTIME = "PERK_BULLETTIME";
+    public const string PERK_FLARE = "PERK_FLARE";
+    public const string PERK_DAMAGE = "PERK_DAMAGE";
+    public const string PERK_METABOLISM = "PERK_METABOLISM";
+    public const string PERK_AUTORELOAD = "PERK_AUTORELOAD";
+    public const string PERK_PROCRASTINATION = "PERK_PROCRASTINATION";
+    public const string PERK_SHIELD = "PERK_SHIELD";
+    public const string PERK_UNDYING = "PERK_UNDYING";
+    public const string PERK_DANGERZONE = "PERK_DANGERZONE";
+    public const string PERK_UNBEATEN = "PERK_UNBEATEN";
 
     public const string PERK_BLINDSHOOTER = "PERK_BLINDSHOOTER";
     public const string PERK_SALVO = "PERK_SALVO";
@@ -33,6 +45,17 @@ public class Perk
     public const string PERK_RAPIDFIRE = "PERK_RAPIDFIRE";
     public const string PERK_BIGGERWAND = "PERK_BIGGERWAND";
     public const string PERK_LIGHTERCHOICE = "PERK_LIGHTERCHOICE";
+    public const string PERK_HEAVIERCHOICE = "PERK_HEAVIERCHOICE";
+    public const string PERK_PENETRATION = "PERK_PENETRATION";
+    public const string PERK_LONGREACH = "PERK_LONGREACH";
+    public const string PERK_FASTHANDS = "PERK_FASTHANDS";
+    public const string PERK_SLUG = "PERK_SLUG";
+    public const string PERK_FLAME = "PERK_FLAME";
+    public const string PERK_EXPLOSION = "PERK_EXPLOSION";
+    public const string PERK_RADIAL = "PERK_RADIAL";
+    public const string PERK_AGING = "PERK_AGING";
+    public const string PERK_XL = "PERK_XL";
+
 
     public static readonly string[] all =
     new string[]{
@@ -45,6 +68,18 @@ public class Perk
         PERK_TANK,
         PERK_SPIKE,
         PERK_REGEN,
+        PERK_GOLDDIGGER,
+        PERK_JUMPER,
+        PERK_BULLETTIME,
+        PERK_FLARE,
+        PERK_DAMAGE,
+        PERK_METABOLISM,
+        PERK_AUTORELOAD,
+        PERK_PROCRASTINATION,
+        PERK_SHIELD,
+        PERK_UNDYING,
+        PERK_DANGERZONE,
+        PERK_UNBEATEN,
 
         PERK_BLINDSHOOTER,
         PERK_SALVO,
@@ -58,6 +93,16 @@ public class Perk
         PERK_RAPIDFIRE,
         PERK_BIGGERWAND,
         PERK_LIGHTERCHOICE,
+        PERK_HEAVIERCHOICE,
+        PERK_PENETRATION,
+        PERK_LONGREACH,
+        PERK_FASTHANDS,
+        PERK_SLUG,
+        PERK_FLAME,
+        PERK_EXPLOSION,
+        PERK_RADIAL,
+        PERK_AGING,
+        PERK_XL,
     };
 
     public virtual void OnFirstActive() { }
@@ -79,7 +124,7 @@ public class Perk
             }
         }
 
-        return allCopy[Random.Range(0, allCopy.Count - 1)];
+        return allCopy[Random.Range(0, allCopy.Count)];
     }
 
     public static Perk Get(string perkID)
@@ -95,6 +140,18 @@ public class Perk
             case PERK_TANK: return new PerkTank();
             case PERK_SPIKE: return new PerkSpike();
             case PERK_REGEN: return new PerkRegen();
+            case PERK_GOLDDIGGER: return new PerkGoldDigger();
+            case PERK_JUMPER: return new PerkJumper();
+            case PERK_BULLETTIME: return new PerkBulletTime();
+            case PERK_FLARE: return new PerkFlare();
+            case PERK_DAMAGE: return new PerkDamage();
+            case PERK_METABOLISM: return new PerkMetabolism();
+            case PERK_AUTORELOAD: return new PerkAutoReload();
+            case PERK_PROCRASTINATION: return new PerkProcrastination();
+            case PERK_SHIELD: return new PerkShield();
+            case PERK_UNDYING: return new PerkUndying();
+            case PERK_DANGERZONE: return new PerkDangerzone();
+            case PERK_UNBEATEN: return new PerkUnbeaten();
 
             case PERK_BLINDSHOOTER: return new PerkBlindShooter();
             case PERK_SALVO: return new PerkSalvo();
@@ -108,6 +165,16 @@ public class Perk
             case PERK_RAPIDFIRE:return new PerkRapidFire();
             case PERK_BIGGERWAND:return new PerkBiggerWand();
             case PERK_LIGHTERCHOICE:return new PerkLighterChoice();
+            case PERK_HEAVIERCHOICE:return new PerkHeavierChoice();
+            case PERK_PENETRATION:return new PerkPenetration();
+            case PERK_LONGREACH:return new PerkLongReach();
+            case PERK_FASTHANDS:return new PerkFastHands();
+            case PERK_SLUG: return new PerkSlug();
+            case PERK_FLAME: return new PerkFlame();
+            case PERK_EXPLOSION: return new PerkExplosion();
+            case PERK_RADIAL: return new PerkRadial();
+            case PERK_AGING: return new PerkAging();
+            case PERK_XL: return new PerkXL();
         }
         Debug.LogError("perk id was not found: " + perkID);
         return null;

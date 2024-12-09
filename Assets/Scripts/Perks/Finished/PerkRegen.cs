@@ -1,4 +1,3 @@
-using System.Collections;
 using UnityEngine;
 
 public class PerkRegen : Perk
@@ -7,25 +6,23 @@ public class PerkRegen : Perk
     {
         ID = PERK_REGEN;
         level = 1;
-        maxLevel = 5;
+        maxLevel = 1;
         OnInstantiate();
     }
 
-    private Coroutine regenCoroutine;
-
     public override void OnFirstActive()
     {
+        Player.onEnemyKill += OnEnemyKill;
     }
 
-    private IEnumerator Regen()
+    public override void OnDiscard()
     {
-        while (true)
-        {
-            if(!LevelManager.currentRoom.isCleared && !LevelManager.currentRoom.isFriendly && Player.main!=null)
-            {
-                Player.main.hp.Heal(new() { damage = 5, isHeal = true });
-            }
-            yield return new WaitForSeconds(5-level*0.5f);
-        }
+        Player.onEnemyKill -= OnEnemyKill;
+    }
+
+    private void OnEnemyKill()
+    {
+        if (Player.main == null || Random.Range(0,1f)<0.3f) return;
+        Player.main.hp.Heal(new() { damage = 1, isHeal = true });
     }
 }

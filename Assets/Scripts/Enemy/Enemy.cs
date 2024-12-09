@@ -13,18 +13,21 @@ public class Enemy : MonoBehaviour
     public const string ENEMY_WANDER = "ENEMY_WANDER";
     public static void Spawn(Vector2 position, string id)
     {
-        if (Physics2D.OverlapCircle(position, 0.4f, LayerMask.GetMask("WorldStatic"))) return;
+        if (Physics2D.OverlapCircle(position, 0.4f, LayerMask.GetMask("WorldStatic","PawnBlock"))) return;
+        LevelManager.currentRoom.enemyCount += 1;
         Utility.GetMono().Delay(UnityEngine.Random.Range(0f, 1f), () =>
         {
             EnemySpawnEffect.SpawnEnemy(position, ()=>SpawnImmediate(position, id));
+            LevelManager.currentRoom.enemyCount -= 1;
         });
     }
     public static bool SpawnImmediate(Vector2 position, string id)
     {
-        if (Physics2D.OverlapCircle(position, 0.4f, LayerMask.GetMask("WorldStatic"))) return false;
+        if (Physics2D.OverlapCircle(position, 0.4f, LayerMask.GetMask("WorldStatic","PawnBlock"))) return false;
         LevelManager.currentRoom.enemyCount += 1;
-
+        SoundSystem.Play(SoundSystem.ENEMY_SPAWN, position, 0.4f);
         GameObject instance = Instantiate(EnemyList.Get(id));
+        instance.gameObject.name = id;
         instance.transform.position = position;
         Enemy enemy = instance.GetComponent<Enemy>();
         enemy.OnSpawn();
@@ -37,8 +40,6 @@ public class Enemy : MonoBehaviour
     [HideInInspector] public PathFinder nav;
     [HideInInspector] public Pawn pawn;
 
-    public string enemyID = "";
-
     public bool doContactDamage = true;
     private bool canContactDamage = true;
     public bool canBeHit = true;
@@ -47,6 +48,7 @@ public class Enemy : MonoBehaviour
     public bool isDead = false;
     public bool flipSprite = false;
     protected bool hasLineOfSight = false;
+    protected bool flinchOnHit = true;
     protected bool isActive = false; //to prevent attacking the moment they spawn
     public float activationDelay = 1;
 
@@ -73,8 +75,8 @@ public class Enemy : MonoBehaviour
         SpawnEffect();
         this.Delay(activationDelay, () => { isActive = true; OnActivation(); });
 
-        attackInfo = this.AttackInfo();
-        contactAttackToPlayer = this.AttackInfo();
+        attackInfo = GetDefaultAttackInfo();
+        contactAttackToPlayer = GetDefaultAttackInfo();
         contactAttackToPlayer.attackType = AttackType.Contact;
 
         contactAttackToSelf.attacker = Entity.Player;
@@ -147,14 +149,14 @@ public class Enemy : MonoBehaviour
                 {
                     wanderDirection = UnityEngine.Random.insideUnitCircle.normalized;
                     wanderDist = 1;
-                    RaycastHit2D hit = Physics2D.CircleCast(transform.position, pawn.radius, wanderDirection, 10, LayerMask.GetMask("WorldStatic"));
+                    RaycastHit2D hit = Physics2D.CircleCast(transform.position, pawn.radius + 0.5f, wanderDirection, 10, LayerMask.GetMask("WorldStatic","PawnBlock"));
                     if (hit.distance > 1.5f)
                     {
-                        wanderDist = UnityEngine.Random.Range(1.5f, hit.distance);
+                        wanderDist = UnityEngine.Random.Range(0.5f, hit.distance);
                     }
                 }
                 wanderDuration = Mathf.Min(2f, wanderDist / pawn.moveSpeed);
-                wanderInterval = UnityEngine.Random.Range(0.5f, 3f);
+                wanderInterval = UnityEngine.Random.Range(0.5f, 2f);
             }
         }
         else if (moveBehaviour == MovementBehaviour.FollowPlayer)
@@ -213,7 +215,6 @@ public class Enemy : MonoBehaviour
 
     public void KnockBack(Vector2 direction)
     {
-        if (!TryGetComponent(out Pawn pawn)) return;
         pawn.AddForce(direction * knockBackAlpha);
     }
 
@@ -224,7 +225,7 @@ public class Enemy : MonoBehaviour
         //perk spike
         if(Player.HasPerk(Perk.PERK_SPIKE) && info.attackType == AttackType.Contact)
         {
-            info.damage = 10 + (10 * Player.GetExistingPerk(Perk.PERK_SPIKE).level);
+            info.damage = 10 + (10 * Player.GetPerk(Perk.PERK_SPIKE).level);
         }
 
         //critical
@@ -235,6 +236,9 @@ public class Enemy : MonoBehaviour
             info.isCrit = true;
         }
 
+        //audio
+        SoundSystem.Play(SoundSystem.ACTION_HIT.GetRandom(), transform.position);
+
         //visual effects
         KnockBack(info.direction * info.knockBack);
         BloodParticleHandler.main.Emit(transform.position, 1, info.direction);
@@ -244,7 +248,7 @@ public class Enemy : MonoBehaviour
             .SetLayer("Overlay")
             .SetColor(new(0.61f, 0.65f, 0.71f))
             );
-        visual.sprite.HitEffect();
+        visual.sprite.HitEffect(flinchOnHit);
 
         return info;
     }
@@ -255,7 +259,7 @@ public class Enemy : MonoBehaviour
         if (Player.HasPerk(Perk.PERK_EYEFOREYE))
         {
             float random = UnityEngine.Random.Range(0, 1f);
-            if (random < 0.1f) Item.Spawn("ITEM_BANANA", transform.position, UnityEngine.Random.insideUnitCircle);
+            if (random < PlayerStats.bananaChance) Item.Spawn("ITEM_BANANA", transform.position, UnityEngine.Random.insideUnitCircle);
         }
 
         StopCoroutine(intervalUpdateCoroutine);
@@ -274,6 +278,7 @@ public class Enemy : MonoBehaviour
             if(gameObject != null)
             {
                 if(Random.Range(0,1f)<PlayerStats.coinChance) Coin.Spawn(transform.position);
+                //SoundSystem.Play(SoundSystem.ENEMY_DEATH_01, transform.position);
                 Effect.Play("Explosion2", EffectInfo.PosRotScale(transform.position + Vector3.up * 0.2f, 0, 0.7f).SetColor(Color.gray));
                 Destroy(gameObject);
             }
@@ -289,5 +294,17 @@ public class Enemy : MonoBehaviour
         RaycastHit2D hit = Physics2D.Raycast(transform.position, transform.GetDirToPlayer(), 30, LayerMask.GetMask(new string[] { "Player", "WorldStatic" }));
         if (hit && hit.collider.gameObject.layer == LayerMask.NameToLayer("Player")) return true;
         else return false;
+    }
+
+    protected AttackInfo GetDefaultAttackInfo()
+    {
+        return new()
+        {
+            attacker = Entity.Enemy,
+            attackerName = gameObject.name,
+            damage = Bullet.defaultDamage,
+            knockBack = Bullet.defaultKnockBack,
+            bulletSpeed = Bullet.enemyBulletSpeed * PlayerStats.enemyBulletSpeedMul,
+        };
     }
 }

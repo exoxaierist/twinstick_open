@@ -10,15 +10,13 @@ public class PerkLighterChoice : Perk
 
     public override void OnFirstActive()
     {
-        PlayerStats.attackSpeed += 3;
+        PlayerStats.attackSpeed += 5;
         PlayerStats.attackAccuracy += 20;
-        PlayerStats.damageMul -= 0.75f;
     }
 
     public override void OnDiscard()
     {
-        PlayerStats.attackSpeed -= 3;
+        PlayerStats.attackSpeed -= 5;
         PlayerStats.attackAccuracy -= 20;
-        PlayerStats.damageMul += 0.75f;
     }
 }

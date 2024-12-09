@@ -7,13 +7,12 @@ public class PathFinder : MonoBehaviour
     public static Tilemap ceilingTilemap;
     public static Tilemap pathBlockTilemap;
     [HideInInspector] public List<Vector2> path = new();
-
     [HideInInspector] public bool optimizePath = true;
 
     private List<Node> openList = new();
     private HashSet<Node> closedList = new();
     private Dictionary<Vector3Int, Node> allNodes = new();
-    private Vector2 targetPos;
+    private Vector2 targetPos; 
 
     [HideInInspector] public Vector3Int[] neighborOffsets = new Vector3Int[]
         {
@@ -25,11 +24,11 @@ public class PathFinder : MonoBehaviour
 
     public void FindPath(Vector2 target)
     {
-        if (!IsWalkable(ceilingTilemap.WorldToCell(transform.position)) || !IsWalkable(ceilingTilemap.WorldToCell(target))) return;
+        if (!IsWalkable(ceilingTilemap.WorldToCell(transform.position)) || !IsWalkable(ceilingTilemap.WorldToCell(target))) { return; }
 
         if (optimizePath)
         {
-            RaycastHit2D hit = Physics2D.CircleCast(transform.position, 0.2f, (Vector3)target - transform.position, Vector2.Distance(transform.position, target), LayerMask.GetMask("WorldStatic"));
+            RaycastHit2D hit = Physics2D.CircleCast(transform.position, 0.2f, (Vector3)target - transform.position, Vector2.Distance(transform.position, target), LayerMask.GetMask("WorldStatic","PawnBlock"));
             if (!hit)
             {
                 path.Clear();
@@ -100,7 +99,7 @@ public class PathFinder : MonoBehaviour
         for (int i = 1; i < path.Count; i++)
         {
             Vector2 to = path[i];
-            RaycastHit2D hit = Physics2D.CircleCast(from, 0.2f, to - from, Vector2.Distance(from, to), LayerMask.GetMask("WorldStatic"));
+            RaycastHit2D hit = Physics2D.CircleCast(from, 0.2f, to - from, Vector2.Distance(from, to), LayerMask.GetMask("WorldStatic","PawnBlock"));
             if (!hit) reachablePos = to;
             else break;
         }
@@ -132,6 +131,12 @@ public class PathFinder : MonoBehaviour
 
         while (currentNode != startNode)
         {
+/*
+            Vector2 from = (Vector2)ceilingTilemap.CellToWorld(currentNode.position) + new Vector2(0.5f, 0.5f) + currentNode.offset;
+            Vector2 to = (Vector2)ceilingTilemap.CellToWorld(currentNode.parent.position) + new Vector2(0.5f, 0.5f) + currentNode.offset;
+            RaycastHit2D hit = Physics2D.CircleCast(from, 0.1f, to - from, Vector2.Distance(from, to), LayerMask.GetMask("WorldStatic", "PawnBlock"));
+            if(!hit) newPath.Add((Vector2)ceilingTilemap.CellToWorld(currentNode.position) + new Vector2(0.5f,0.5f) + currentNode.offset);
+            */
             newPath.Add((Vector2)ceilingTilemap.CellToWorld(currentNode.position) + new Vector2(0.5f,0.5f) + currentNode.offset);
             currentNode = currentNode.parent;
         }
@@ -182,7 +187,8 @@ public class PathFinder : MonoBehaviour
 
     private bool IsWalkable(Vector3Int position)
     {
-        return !ceilingTilemap.HasTile(position) && !pathBlockTilemap.HasTile(position);
+        return !ceilingTilemap.HasTile(position) && !pathBlockTilemap.HasTile(position)
+            && Physics2D.OverlapPoint(ceilingTilemap.CellToWorld(position) + new Vector3(0.5f,0.6f), LayerMask.GetMask("PawnBlock","WorldStatic")) == null;
     }
 
     private float GetDistance(Node a, Node b)
@@ -220,6 +226,7 @@ public class PathFinder : MonoBehaviour
             if (pool.Count == 0) return new Node(pos);
             Node instance = pool[0];
             instance.position = pos;
+            instance.offset = Vector2.zero;
             instance.parent = null;
             instance.gCost = 0;
             instance.hCost = 0;

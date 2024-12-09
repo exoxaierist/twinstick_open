@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "EnemySpawnSet",menuName = "Enemy Spawn Set")]
@@ -20,13 +19,15 @@ public class EnemySpawnSet : ScriptableObject
     private List<EnemyWeight> currentRecipe;
     private List<string> currentRandomRecipe = new();
 
+    const bool randomSpawn = true;
+
     public static void SetRecipe()
     {
-        if (true)
+        if (randomSpawn)
         {
             //random spawn
             main.currentRandomRecipe.Clear();
-            List<string> allId = EnemyList.main.map.Keys.ToList();
+            List<string> allId = EnemyList.GetAllID(LevelManager.currentRoomNumber);
             for (int i = 0; i < 3; i++)
             {
                 main.currentRandomRecipe.Add(allId[UnityEngine.Random.Range(0, allId.Count)]);
@@ -43,7 +44,7 @@ public class EnemySpawnSet : ScriptableObject
 
     public static string GetID()
     {
-        if (true)
+        if (randomSpawn)
         {
             //random pick
             return main.currentRandomRecipe[UnityEngine.Random.Range(0, main.currentRandomRecipe.Count)];

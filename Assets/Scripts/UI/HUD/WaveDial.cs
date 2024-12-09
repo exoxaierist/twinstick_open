@@ -23,7 +23,7 @@ public class WaveDial : MonoBehaviour
 
         text.DOFade(1, 0.5f).SetDelay(1);
         dial.DOFillAmount(1, 2).OnComplete(()=>dial.fillAmount = 0);
-        text.text = Locale.Get("UI_WAVE") + " 1 /"+prevMetaRoom.waveCount;
+        text.text = Locale.Get("UI_WAVE") + " 1/"+prevMetaRoom.waveCount;
     }
 
     private void OnWaveStart()
@@ -37,7 +37,7 @@ public class WaveDial : MonoBehaviour
         }
         else
         {
-            dial.DOFillAmount(1, 10).OnComplete(()=>dial.fillAmount = 0);
+            dial.DOFillAmount(1, PlayerStats.waveInterval).OnComplete(()=>dial.fillAmount = 0);
         }
     }
 }

@@ -1,5 +1,4 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class BatMotherEnemy : Enemy
@@ -33,8 +32,7 @@ public class BatMotherEnemy : Enemy
             SetMovementBehaviour(MovementBehaviour.None);
             for (int i = 0; i < Random.Range(1,3); i++)
             {
-               this.Delay(Random.Range(0,0.5f),
-                   ()=>Spawn((Vector2)transform.position + Random.insideUnitCircle*1.5f, ENEMY_BAT));
+               Spawn((Vector2)transform.position + Random.insideUnitCircle, ENEMY_BAT);
             }
             yield return new WaitForSeconds(1);
             SetMovementBehaviour(MovementBehaviour.Wander);

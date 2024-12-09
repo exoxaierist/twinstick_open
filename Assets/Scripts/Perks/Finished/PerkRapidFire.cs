@@ -10,16 +10,16 @@ public class PerkRapidFire : Perk
 
     public override void OnFirstActive()
     {
-        PlayerStats.attackSpeed += 0.75f * level;
+        PlayerStats.attackSpeed += 1 * level;
     }
 
     public override void OnLevelUp()
     {
-        PlayerStats.attackSpeed += 0.75f;
+        PlayerStats.attackSpeed += 1;
     }
 
     public override void OnDiscard()
     {
-        PlayerStats.attackSpeed -= 0.75f * level;
+        PlayerStats.attackSpeed -= 1 * level;
     }
 }

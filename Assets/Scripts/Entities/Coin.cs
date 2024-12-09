@@ -1,4 +1,5 @@
 using DG.Tweening;
+using System.Collections;
 using UnityEngine;
 
 public class Coin : MonoBehaviour
@@ -10,23 +11,29 @@ public class Coin : MonoBehaviour
         for (int i = 0; i < count; i++) Spawn(pos, amount);
     }
 
-    public static void Spawn(Vector2 pos, int _amount = 5)
+    public static void Spawn(Vector2 pos, int _amount = 3)
     {
+        if (LevelManager.currentRoom.coinDropAmount >= PlayerStats.roomMaxCoinCount) return; 
         Coin instance = pool.Get().GetComponent<Coin>();
+        LevelManager.currentRoom.coinDropAmount += _amount;
         instance.visual = instance.GetComponent<VisualHandler>();
         instance.transform.position = pos;
         instance.amount = _amount;
+        instance.lifetime = 10;
         instance.collected = false;
         instance.ThrowCoin();
     }
 
+    public float lifetime = 10;
     public int amount = 10;
     private bool canBeCollected = false;
     private bool collected = false;
     private VisualHandler visual;
+    private Coroutine releaseCoroutine;
 
     private void ThrowCoin()
     {
+        SoundSystem.Play(SoundSystem.COIN_SPAWN, transform.position,0.4f);
         Vector3 targetPos = new();
         for (int i = 0; i < 10; i++)
         {
@@ -37,12 +44,15 @@ public class Coin : MonoBehaviour
         visual.Jump(targetPos, 0.5f, 0.4f);
         canBeCollected = false;
         this.Delay(0.4f, ()=>canBeCollected = true);
+        releaseCoroutine = StartCoroutine(ReleaseTimer());
     }
 
     private void CollectToPlayer()
     {
+        if (releaseCoroutine != null) StopCoroutine(releaseCoroutine);
         collected = true;
         Vector3 from = transform.position;
+        visual.sprite.gameObject.SetActive(true);
         visual.Jump(0.3f, 0.4f);
         DOTween.To(() => 0
         , x => transform.position = Vector3.Lerp(from, Player.main.transform.position, x)
@@ -51,6 +61,7 @@ public class Coin : MonoBehaviour
             .SetDelay(0.31f)
             .OnComplete(() =>
             {
+                SoundSystem.Play(SoundSystem.COIN_ACQUIRE, transform.position,0.4f);
                 Effect.Play("Pop", EffectInfo
                     .PosRotScale(transform.position, 0 , 1f)
                     .SetLayer("Overlay"));
@@ -64,5 +75,19 @@ public class Coin : MonoBehaviour
         if (collected || !canBeCollected) return;
         if (!col.CompareTag("Player")) return;
         CollectToPlayer();
+    }
+
+    private IEnumerator ReleaseTimer()
+    {
+        yield return new WaitForSeconds(12);
+        for (int i = 0; i < 7; i++)
+        {
+            visual.sprite.gameObject.SetActive(false);
+            yield return new WaitForSeconds(0.2f);
+            visual.sprite.gameObject.SetActive(true);
+            yield return new WaitForSeconds(0.2f);
+        }
+        canBeCollected = false;
+        pool.Release(gameObject);
     }
 }

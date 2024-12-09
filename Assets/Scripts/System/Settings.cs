@@ -88,6 +88,7 @@ public static class Settings
     {
         ApplyResolution(resolution, fullscreenMode);
         Locale.SetLanguage(lang == "Korean" ? Language.Korean : Language.English);
+        SoundSystem.SetVolume();
     }
 
     public static List<string> GetResolutionOptions()

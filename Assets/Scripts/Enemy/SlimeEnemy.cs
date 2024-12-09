@@ -16,11 +16,11 @@ public class SlimeEnemy : Enemy
     protected override void OnIntervalUpdate()
     {
         float distance = Vector2.Distance(Player.main.transform.position, transform.position);
-        if(distance < 5)
+        if(distance < 8)
         {
             SetMovementBehaviour(MovementBehaviour.FollowPlayer);
         }
-        else if(distance > 6)
+        else if(distance > 9)
         {
             SetMovementBehaviour(MovementBehaviour.Wander);
         }
@@ -30,21 +30,27 @@ public class SlimeEnemy : Enemy
     {
         info = base.OnReceiveAttack(info);
 
-        if(hp.health <= info.damage)
+        if (hp.health <= info.damage)
         {
-            info.damage = 0;
-            Split();
+            if (Split()) info.damage = 0;
         }
 
         return info;
     }
 
-    private void Split()
+    private bool Split()
     {
-        SpawnImmediate(transform.position, "ENEMY_SMALLSLIME");
-        SpawnImmediate(transform.position, "ENEMY_SMALLSLIME");
-        LevelManager.currentRoom.enemyCount -=1 ;
-        visual.KillTweens();
-        Destroy(gameObject);
+        bool spawned = SpawnImmediate(transform.position, "ENEMY_SMALLSLIME");
+        if (!SpawnImmediate(transform.position, "ENEMY_SMALLSLIME") && !spawned)
+        {
+            return false;
+        }
+        else
+        {
+            LevelManager.currentRoom.enemyCount -= 1;
+            visual.KillTweens();
+            Destroy(gameObject);
+            return true;
+        }
     }
 }

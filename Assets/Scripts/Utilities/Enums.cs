@@ -25,11 +25,13 @@ public enum RoomType
     Shop,
     Spawn,
     Test,
-    Finish
+    Finish,
+    Boss,
 }
 
 public enum HitColliderType
 {
+    None,
     Wall,
     Entity
 }
@@ -38,6 +40,7 @@ public enum Entity
 {
     Player,
     Enemy,
+    Gimic,
 }
 
 public enum MovementBehaviour
@@ -57,6 +60,9 @@ public enum BulletType
 {
     Normal,
     Small,
+    Large,
+    Tracking,
+    Fire,
 }
 
 public enum AttackType

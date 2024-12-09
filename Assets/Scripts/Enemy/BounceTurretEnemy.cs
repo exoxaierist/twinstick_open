@@ -10,7 +10,7 @@ public class BounceTurretEnemy : Enemy
     {
         base.OnSpawn();
         shootRoutine = StartCoroutine(Shoot());
-        attackInfo.bulletSpeed = Bullet.ENEMY_BULLET_SPEED_FAST;
+        attackInfo.bulletSpeed = Bullet.enemyBulletSpeedFast;
         attackInfo.bulletMaxDist = 20;
         attackInfo.bounceCount = 1;
     }
@@ -42,11 +42,14 @@ public class BounceTurretEnemy : Enemy
         {
             if (hasLineOfSight && isActive)
             {
+                SetMovementBehaviour(MovementBehaviour.None);
                 activeLaser = Laser.Spawn(transform.position + Vector3.up * 0.2f, transform.GetDirToPlayer(), thickness: 0.1f);
                 attackInfo.direction = transform.GetDirToPlayer();
                 this.Delay(1.3f, () =>
                 {
+                    SoundSystem.Play(SoundSystem.ACTION_SHOOT_ENEMY.GetRandom(), transform.position, 0.5f);
                     if (!isDead) Bullet.Fire((Vector2)transform.position + attackInfo.direction * 0.5f, attackInfo);
+                    SetMovementBehaviour(MovementBehaviour.Wander);
                 });
                 yield return new WaitForSeconds(4);
             }

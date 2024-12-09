@@ -29,10 +29,12 @@ public class SpiralJumperEnemy : Enemy
 
             this.Delay(0.05f, () => { visual.sprite.sortingLayerName = "Overlay"; col.enabled = false; });
             this.Delay(0.55f, () => { visual.sprite.sortingLayerName = "Default"; col.enabled = true; });
+            SoundSystem.Play(SoundSystem.ACTION_JUMP, transform.position, 0.5f);
 
 
             this.Delay(0.6f, () =>
             {
+                SoundSystem.Play(SoundSystem.ACTION_SHOOT_ENEMY.GetRandom(), transform.position, 0.5f);
                 attackInfo.direction = Vector2.right.Rotate(45);
                 Bullet.Fire(transform.position, attackInfo);
                 attackInfo.direction = Vector2.left.Rotate(45);
@@ -53,7 +55,7 @@ public class SpiralJumperEnemy : Enemy
         for (int i = 0; i < 100; i++)
         {
             random = Random.insideUnitCircle * maxJumpDist;
-            Collider2D hit = Physics2D.OverlapCircle((Vector2)transform.position + random, 0.5f, LayerMask.GetMask("WorldStatic", "EnemyBlock"));
+            Collider2D hit = Physics2D.OverlapCircle((Vector2)transform.position + random, 0.5f, LayerMask.GetMask("WorldStatic", "EnemyBlock", "PawnBlock"));
             if (hit == null) break;
             random = Vector2.zero;
         }

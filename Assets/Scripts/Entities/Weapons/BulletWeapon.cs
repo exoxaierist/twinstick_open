@@ -20,9 +20,12 @@ public class BulletWeapon : Weapon
         if (isReloading) return;
 
         info.direction = info.direction.Rotate(Random.Range(-PlayerStats.attackAccuracy,PlayerStats.attackAccuracy)*0.5f);
-
-        Bullet.Fire(transform.position + transform.localRotation * muzzleOffset, info);
+        Vector2 pos = transform.position; ;
+        Bullet.Fire(pos, info);
         ammoCount -= 1+info.bulletAdditionalCost;
+        Effect.PlayColored(!isEnemy, "MuzzleFlash",
+            EffectInfo.Pos(pos))
+            .transform.SetParent(transform.parent);
 
         OnShoot();
 
@@ -31,13 +34,6 @@ public class BulletWeapon : Weapon
 
     protected virtual void OnShoot()
     {
-        Effect.PlayColored(!isEnemy, "MuzzleFlash",
-            EffectInfo.Pos(transform.position + transform.localRotation * muzzleOffset))
-            .transform.SetParent(transform.parent);
-    }
-
-    protected override void OnReloadComplete()
-    {
-        ammoCount = magSize;
+        
     }
 }

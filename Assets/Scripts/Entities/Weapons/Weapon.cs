@@ -14,7 +14,7 @@ public class Weapon : MonoBehaviour
     private Transform visual;
 
     [Header("Attack Params")]
-    [SerializeField] private float fireInterval = 0.1f;
+    [SerializeField] private float fireInterval = 0.2f;
     [SerializeField] public float autoFirePenalty = 0f;
     private float penaltyTimer;
     private bool canShoot = true;
@@ -87,10 +87,17 @@ public class Weapon : MonoBehaviour
         info.bulletAdditionalCost = -1;
         List<AttackInfo> list = new();
 
+        //xl
+        if (Player.HasPerk(Perk.PERK_XL))
+        {
+            info.bulletType = BulletType.Large;
+        }
+
+        //blind shooter
         if (Player.HasPerk(Perk.PERK_BLINDSHOOTER))
         {
             AttackInfo instance = info;
-            for (int i = 0; i < Player.GetExistingPerk(Perk.PERK_BLINDSHOOTER).level; i++)
+            for (int i = 0; i < Player.GetPerk(Perk.PERK_BLINDSHOOTER).level; i++)
             {
                 instance.direction = info.direction.Rotate(15 * i + 12);
                 list.Add(instance);
@@ -100,11 +107,27 @@ public class Weapon : MonoBehaviour
         }
         else list.Add(info);
 
+        //cover six
         if (Player.HasPerk(Perk.PERK_COVERSIX))
         {
             AttackInfo copy = info;
             copy.direction *= -1;
             list.Add(copy);
+        }
+
+        //radial
+        if (Player.HasPerk(Perk.PERK_RADIAL))
+        {
+            int radialCount = 3 + Player.GetPerk(Perk.PERK_RADIAL).level;
+            float radialTheta = 360f / radialCount;
+            float radialAngle = 0;
+            for (int i = 0; i < radialCount; i++)
+            {
+                AttackInfo copy = info;
+                copy.direction = Vector2.up.Rotate(radialAngle);
+                list.Add(copy);
+                radialAngle += radialTheta;
+            }
         }
 
         //add cost of 1 for entire list
@@ -116,6 +139,8 @@ public class Weapon : MonoBehaviour
         {
             AttackAction(item);
         }
+
+        SoundSystem.Play(SoundSystem.ACTION_SHOOT.GetRandom(),Player.main.transform.position,0.5f);
         CamController.main.Shake(0.05f);
     }
     protected virtual void AttackAction(AttackInfo info) { }
@@ -131,6 +156,7 @@ public class Weapon : MonoBehaviour
     public void StartReload()
     {
         if (isReloading || ammoCount == _magSize) return;
+        SoundSystem.Play(SoundSystem.PLAYER_RELOAD_START, transform.position,0.1f);
         isReloading = true;
         DOTween.To(() => reloadProgress, x => { reloadProgress = x; UIManager.main.SetReloadProgress(x); }, 1, reloadDuration * PlayerStats.reloadDuration)
             .SetEase(Ease.InOutCirc)
@@ -138,12 +164,13 @@ public class Weapon : MonoBehaviour
             {
                 reloadProgress = 0;
                 isReloading = false;
+                SoundSystem.Play(SoundSystem.PLAYER_RELOAD_END, transform.position,0.1f);
                 this.Delay(0.1f, () => UIManager.main.HideReloadProgress());
                 OnReloadComplete();
             });
     }
     protected virtual void OnReloadComplete()
     {
-
+        ammoCount = magSize;
     }
 }

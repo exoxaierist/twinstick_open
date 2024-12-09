@@ -68,6 +68,7 @@ public class Item : MonoBehaviour, IInteractable
     protected void Acquire()
     {
         OnAcquire();
+        SoundSystem.Play(SoundSystem.MISC_GULP,transform.position);
         Player.main.ShowHeadUpText(Locale.Get("MISC_YUM"));
         Effect.Play("Pop", EffectInfo.Pos(transform.position + Vector3.up * 0.1f));
         HideUI();

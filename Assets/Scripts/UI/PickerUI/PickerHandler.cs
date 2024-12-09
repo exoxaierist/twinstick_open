@@ -14,7 +14,7 @@ public class PickerHandler : Selectable, IMoveHandler, ISubmitHandler, ICancelHa
     public TextMeshProUGUI elementPrice;
     
     public List<PickerElement> pickers = new();
-    int currentIndex = -1;
+    protected int currentIndex = -1;
 
     protected bool isOpen = false;
     protected bool isTransitioning = false;
@@ -25,9 +25,9 @@ public class PickerHandler : Selectable, IMoveHandler, ISubmitHandler, ICancelHa
         {
             PickerElement picker = pickers[i];
             RectTransform pickerT = picker.transform as RectTransform;
-            Vector2 targetPos = new((i - currentIndex) * 15 * Mathf.Max(1,20-Mathf.Abs(i-currentIndex)*2f),
+            Vector2 targetPos = new((i - currentIndex) * 15 * Mathf.Max(1,20-Mathf.Abs(i-currentIndex)*1.5f),
                 -Mathf.Pow(Mathf.Abs(i - currentIndex),2) * 10);
-            pickerT.localPosition = (Vector2)pickerT.localPosition + (targetPos - (Vector2)pickerT.localPosition)*Time.deltaTime*10;
+            pickerT.localPosition = (Vector2)pickerT.localPosition + (targetPos - (Vector2)pickerT.localPosition)*Time.unscaledDeltaTime*10;
         }
     }
 
@@ -51,24 +51,29 @@ public class PickerHandler : Selectable, IMoveHandler, ISubmitHandler, ICancelHa
     {
         if (isTransitioning) return;
         isOpen = true;
-        Player.main.Sleep(true);
+        GameManager.PauseGame();
+        UIManager.main.canPause = false;
         gameObject.SetActive(true);
-        group.DOFade(1, 0.3f);
+        group.DOFade(1, 0.3f).SetUpdate(true);
         CreateElements();
-        this.DelayFrame(()=>EventSystem.current.SetSelectedGameObject(gameObject));
-        Select(0);
+        this.DelayFrame(()=>
+        {
+            EventSystem.current.SetSelectedGameObject(gameObject);
+            Select(0);
+        });
     }
 
     protected virtual void Close()
     {
         if (isTransitioning) return;
         isTransitioning = true;
-        Player.main.Sleep(false);
-        group.DOFade(0, 0.3f)
+        GameManager.ResumeGame();
+        group.DOFade(0, 0.3f).SetUpdate(true)
             .OnComplete(() =>
             {
                 isTransitioning = false;
                 isOpen = false;
+                UIManager.main.canPause = true;
                 gameObject.SetActive(false);
                 EventSystem.current.SetSelectedGameObject(null);
                 for (int i = 0; i < pickers.Count; i++)
@@ -81,20 +86,18 @@ public class PickerHandler : Selectable, IMoveHandler, ISubmitHandler, ICancelHa
 
     protected virtual void CreateElements() { }
 
-    private void Select(int index)
+    protected virtual void Select(int index)
     {
         index = Mathf.Clamp(index, 0, pickers.Count - 1);
-        if (index == currentIndex) return;
+        if (currentIndex != index) SoundSystem.Play(SoundSystem.UI_HOVER);
+
+        if(currentIndex>=0) pickers[currentIndex].OnDeselect();
+        pickers[index].OnSelect();
+        currentIndex = index;
 
         elementName.text = pickers[index].info.name;
         elementDescription.text = pickers[index].info.description;
-        pickers[index].OnSelect();
-        if(currentIndex>=0) pickers[currentIndex].OnDeselect();
-        currentIndex = index;
     }
 
-    protected virtual void Confirm(PickerElement picker)
-    {
-        
-    }
+    protected virtual void Confirm(PickerElement picker) { }
 }

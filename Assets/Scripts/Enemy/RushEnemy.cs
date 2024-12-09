@@ -7,13 +7,13 @@ public class RushEnemy : Enemy
     private float fastMovespeed = 10;
     private Coroutine waitCoroutine;
 
-    private Vector2 savedPosition;
+    private Vector2 savedDirection;
       
     protected override void OnActivation()
     {
         pawn.moveSpeed = slowMovespeed;
         pawn.accelRate = 60;
-        SetMovementBehaviour(MovementBehaviour.FollowPlayer);
+        SetMovementBehaviour(MovementBehaviour.Wander);
     }
 
     private void Update()
@@ -25,10 +25,15 @@ public class RushEnemy : Enemy
     protected override void OnIntervalUpdate()
     {
         CalcLineOfSight();
-        if (hasLineOfSight && Vector2.Distance(transform.position,Player.main.transform.position)<5)
+        if (Vector2.Distance(transform.position, Player.main.transform.position) < 10)
         {
-            waitCoroutine ??= StartCoroutine(WaitRoutine());
+            SetMovementBehaviour(MovementBehaviour.FollowPlayer);
+            if (hasLineOfSight && Vector2.Distance(transform.position, Player.main.transform.position) < 5)
+            {
+                waitCoroutine ??= StartCoroutine(WaitRoutine());
+            }
         }
+        else SetMovementBehaviour(MovementBehaviour.Wander);
     }
 
     protected override void OnDeath(AttackInfo info)
@@ -48,18 +53,19 @@ public class RushEnemy : Enemy
             waitCoroutine = null;
             yield break;
         }
-        savedPosition = Player.main.transform.position;
-        nav.FindPath(savedPosition);
+        savedDirection = transform.GetDirToPlayer();
         yield return new WaitForSeconds(0.2f);
         pawn.moveSpeed = fastMovespeed;
-        while(Vector2.Distance(transform.position,savedPosition) > 1)
+        float time = 0.5f;
+        while(time>0)
         {
-            pawn.MoveInput(nav.GetDirection());
+            pawn.MoveInput(savedDirection);
+            time -= Time.deltaTime;
             yield return null;
         }
         pawn.moveSpeed = slowMovespeed;
         yield return new WaitForSeconds(Random.Range(0.5f,3));
-        SetMovementBehaviour(MovementBehaviour.FollowPlayer);
+        SetMovementBehaviour(MovementBehaviour.Wander);
         waitCoroutine = null;
     }
 }

@@ -20,6 +20,17 @@ public class PerkHomeostasis : Perk
         else Player.onPlayerSpawn += Activate;
     }
 
+    public override void OnDiscard()
+    {
+        Player.onPlayerSpawn -= Activate;
+        if (Player.main != null)
+        {
+            Player.main.hp.onDamage -= OnPlayerDamage;
+            Player.main.hp.onHeal -= OnPlayerHeal;
+        }
+        Utility.GetMono().StopCoroutine(healRoutine);
+    }
+
     private void Activate()
     {
         nextTargetHP = Player.main.hp.health;
@@ -39,7 +50,7 @@ public class PerkHomeostasis : Perk
     {
         nextTargetHP = Player.main.hp.health;
 
-        while (Player.main.hp.health < targetHP)
+        while (Player.main.hp.health < targetHP && !LevelManager.currentRoom.isCleared)
         {
             yield return new WaitForSeconds(1);
             if (Player.main.hp == null || Player.main.hp.isDead) yield break;

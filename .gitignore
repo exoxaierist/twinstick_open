@@ -10,6 +10,14 @@
 /[Ll]ogs/
 /[Mm]emoryCaptures/
 [Uu]ser[Ss]ettings/
+Audio/
+Fonts/
+Plugins/
+Prefabs/
+Scenes/
+Sprites/
+TextMesh Pro/
+UI Toolkit/
 
 # Asset meta data should only be ignored when the corresponding asset is also ignored
 !/[Aa]ssets/**/*.meta
@@ -43,6 +51,7 @@ ExportedObj/
 *.mdb
 *.opendb
 *.VC.db
+*.meta
 
 # Unity3D generated meta files
 *.pidb.meta

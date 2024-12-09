@@ -5,7 +5,7 @@ using UnityEngine.Events;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-public class Stepper : Selectable
+public class Stepper : SelectableExtended
 {
     public TextMeshProUGUI text;
     public Graphic arrowLeft;
@@ -39,6 +39,7 @@ public class Stepper : Selectable
     private void SetIndex(int newValue)
     {
         newValue = Mathf.Clamp(newValue, 0, options.Count - 1);
+        if (newValue != _value) SoundSystem.Play(SoundSystem.UI_SUBMIT);
         _value = newValue;
         UpdateVisual();
     }
