@@ -16,13 +16,12 @@ public class PerkHomeostasis : Perk
 
     public override void OnFirstActive()
     {
-        if (LevelManager.inLevel) Activate();
+        if (Player.main == null) Activate();
         else Player.onPlayerSpawn += Activate;
     }
 
     public override void OnDiscard()
     {
-        Player.onPlayerSpawn -= Activate;
         if (Player.main != null)
         {
             Player.main.hp.onDamage -= OnPlayerDamage;
@@ -36,6 +35,7 @@ public class PerkHomeostasis : Perk
         nextTargetHP = Player.main.hp.health;
         Player.main.hp.onDamage += OnPlayerDamage;
         Player.main.hp.onHeal += OnPlayerHeal;
+        Player.onPlayerSpawn -= Activate;
     }
 
     private void OnPlayerHeal() => nextTargetHP = Player.main.hp.health;
