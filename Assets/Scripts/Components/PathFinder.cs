@@ -220,11 +220,11 @@ public class PathFinder : MonoBehaviour
         }
 
         //pooling
-        private static List<Node> pool = new();
+        private static Queue<Node> pool = new();
         public static Node Get(Vector3Int pos)
         {
             if (pool.Count == 0) return new Node(pos);
-            Node instance = pool[0];
+            Node instance = pool.Dequeue();
             instance.position = pos;
             instance.offset = Vector2.zero;
             instance.parent = null;
@@ -234,7 +234,7 @@ public class PathFinder : MonoBehaviour
         }
         private static void ReturnNode(Node node)
         {
-            pool.Add(node);
+            pool.Enqueue(node);
         }
         public void Return() => ReturnNode(this);
     }
