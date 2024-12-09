@@ -3,14 +3,11 @@ using System.Collections;
 using UnityEngine;
 
 [RequireComponent(typeof(Hp))]
+[RequireComponent(typeof(Pawn))]
+[RequireComponent(typeof(PathFinder))]
+[RequireComponent(typeof(VisualHandler))]
 public class Enemy : MonoBehaviour
 {
-    public const string ENEMY_BAT = "ENEMY_BAT";
-    public const string ENEMY_KNIGHT = "ENEMY_KNIGHT";
-    public const string ENEMY_BULLET = "ENEMY_BULLET";
-    public const string ENEMY_JUMPER = "ENEMY_JUMPER";
-    public const string ENEMY_PED = "ENEMY_PED";
-    public const string ENEMY_WANDER = "ENEMY_WANDER";
     public static void Spawn(Vector2 position, string id)
     {
         if (Physics2D.OverlapCircle(position, 0.4f, LayerMask.GetMask("WorldStatic","PawnBlock"))) return;
@@ -41,18 +38,18 @@ public class Enemy : MonoBehaviour
     [HideInInspector] public Pawn pawn;
 
     public bool doContactDamage = true;
-    private bool canContactDamage = true;
+    public MovementBehaviour moveBehaviour = MovementBehaviour.None;
     public bool canBeHit = true;
-    public float immuneAfterHit = 0.1f;
     public float knockBackAlpha = 1;
-    public bool isDead = false;
-    public bool flipSprite = false;
+    private bool canContactDamage = true;
     protected bool hasLineOfSight = false;
+
+    public bool flipSprite;
     protected bool flinchOnHit = true;
+
     protected bool isActive = false; //to prevent attacking the moment they spawn
     public float activationDelay = 1;
 
-    public MovementBehaviour moveBehaviour = MovementBehaviour.None;
 
     //interval timers;
     private float pathFindInterval = 0.5f;
@@ -74,17 +71,6 @@ public class Enemy : MonoBehaviour
         Initialize();
         SpawnEffect();
         this.Delay(activationDelay, () => { isActive = true; OnActivation(); });
-
-        attackInfo = GetDefaultAttackInfo();
-        contactAttackToPlayer = GetDefaultAttackInfo();
-        contactAttackToPlayer.attackType = AttackType.Contact;
-
-        contactAttackToSelf.attacker = Entity.Player;
-        contactAttackToSelf.attackerName = Locale.Get("PLAYER");
-        contactAttackToSelf.attackType = AttackType.Contact;
-
-        hp.maxHealth = (int)(hp.maxHealth * PlayerStats.enemyHpMul);
-        hp.health = hp.maxHealth;
     }
 
     protected virtual void OnActivation() { }
@@ -92,6 +78,7 @@ public class Enemy : MonoBehaviour
     protected virtual void OnIntervalUpdate() { }
     private IEnumerator IntervalUpdate()
     {
+        yield return null;
         while (!hp.isDead)
         {
             OnIntervalUpdate();
@@ -101,15 +88,25 @@ public class Enemy : MonoBehaviour
 
     protected void Initialize()
     {
+        pawn = GetComponent<Pawn>();
+        nav = GetComponent<PathFinder>();
+        visual = GetComponent<VisualHandler>();
         hp = GetComponent<Hp>();
         hp.onReceiveAttack += OnReceiveAttack;
         hp.onDeath += OnDeath;
+        //set max health by stats
+        hp.maxHealth = (int)(hp.maxHealth * PlayerStats.enemyHpMul);
+        hp.health = hp.maxHealth;
 
-        TryGetComponent(out pawn);
-        TryGetComponent(out nav);
+        //set default attack info
+        attackInfo = GetDefaultAttackInfo();
+        contactAttackToPlayer = GetDefaultAttackInfo();
+        contactAttackToPlayer.attackType = AttackType.Contact;
+        contactAttackToSelf.attacker = Entity.Player;
+        contactAttackToSelf.attackerName = Locale.Get("PLAYER");
+        contactAttackToSelf.attackType = AttackType.Contact;
 
-        visual = GetComponent<VisualHandler>();
-
+        //start interval update
         intervalUpdateCoroutine = StartCoroutine(IntervalUpdate());
     }
 
@@ -127,10 +124,10 @@ public class Enemy : MonoBehaviour
         pathFindInterval = 0.5f;
     }
 
-    //called on update
+    //handle movement, call on update
     protected void Movement()
     {
-        if (hp.isDead) return;
+        if (hp.isDead || pawn==null) return;
         if (moveBehaviour == MovementBehaviour.None) return;
         if (moveBehaviour == MovementBehaviour.Wander)
         {
@@ -149,17 +146,16 @@ public class Enemy : MonoBehaviour
                 {
                     wanderDirection = UnityEngine.Random.insideUnitCircle.normalized;
                     wanderDist = 1;
-                    RaycastHit2D hit = Physics2D.CircleCast(transform.position, pawn.radius + 0.5f, wanderDirection, 10, LayerMask.GetMask("WorldStatic","PawnBlock"));
-                    if (hit.distance > 1.5f)
-                    {
+                    RaycastHit2D hit = Physics2D.CircleCast(transform.position, pawn.radius + 0.1f, wanderDirection, 10, LayerMask.GetMask("WorldStatic","PawnBlock"));
+                    if (hit.distance > 1.5f) 
                         wanderDist = UnityEngine.Random.Range(0.5f, hit.distance);
-                    }
                 }
                 wanderDuration = Mathf.Min(2f, wanderDist / pawn.moveSpeed);
                 wanderInterval = UnityEngine.Random.Range(0.5f, 2f);
             }
+            return;
         }
-        else if (moveBehaviour == MovementBehaviour.FollowPlayer)
+        if (moveBehaviour == MovementBehaviour.FollowPlayer)
         {
             if (nav == null) return;
             pathFindInterval -= Time.deltaTime;
@@ -168,11 +164,10 @@ public class Enemy : MonoBehaviour
                 nav.FindPath(Player.main.transform.position);
                 pathFindInterval = UnityEngine.Random.Range(0.3f, 0.5f);
             }
-            if(pawn!=null) pawn.MoveInput(nav.GetDirection());
+            pawn.MoveInput(nav.GetDirection());
         }
     }
 
-    //called on update
     protected void SetSpriteDirection(SpriteDirMode mode)
     {
         if(mode == SpriteDirMode.FaceDirection)
@@ -180,12 +175,14 @@ public class Enemy : MonoBehaviour
             if (pawn == null) return;
             if (pawn.unscaledVelocity.x < -0.1f) visual.sprite.flipX = flipSprite; //left
             else if (pawn.unscaledVelocity.x > 0.1f) visual.sprite.flipX = !flipSprite; //right
+            return;
         }
-        else if(mode == SpriteDirMode.FacePlayer)
+        if(mode == SpriteDirMode.FacePlayer)
         {
             float distToPlayer = transform.GetDirToPlayer().x;
             if (distToPlayer < -0.1f) visual.sprite.flipX = flipSprite;
             else if (distToPlayer > 0.1f) visual.sprite.flipX = !flipSprite;
+            return;
         }
     }
 
@@ -202,7 +199,7 @@ public class Enemy : MonoBehaviour
 
     private void OnTriggerStay2D(Collider2D collider)
     {
-        if (isDead || !doContactDamage || !collider.CompareTag("Player") || !canContactDamage) return;
+        if (!hp.isDead || !doContactDamage || !collider.CompareTag("Player") || !canContactDamage) return;
         canContactDamage = false;
         this.Delay(0.5f, () => canContactDamage = true);
 
@@ -222,8 +219,9 @@ public class Enemy : MonoBehaviour
     {
         if (!canBeHit) return new() { damage = 0 };
 
+        #region Perk Effects
         //perk spike
-        if(Player.HasPerk(Perk.PERK_SPIKE) && info.attackType == AttackType.Contact)
+        if (Player.HasPerk(Perk.PERK_SPIKE) && info.attackType == AttackType.Contact)
         {
             info.damage = 10 + (10 * Player.GetPerk(Perk.PERK_SPIKE).level);
         }
@@ -235,6 +233,7 @@ public class Enemy : MonoBehaviour
             info.damage = (int)(info.damage * PlayerStats.critMul);
             info.isCrit = true;
         }
+        #endregion
 
         //audio
         SoundSystem.Play(SoundSystem.ACTION_HIT.GetRandom(), transform.position);
@@ -269,7 +268,6 @@ public class Enemy : MonoBehaviour
         visual.sprite.SetGray();
         pawn.accelRate = 30;
         pawn.AddForce(info.direction * 4);
-        isDead = true;
         enabled = false;
         LevelManager.currentRoom.enemyCount -= 1;
 
@@ -278,17 +276,13 @@ public class Enemy : MonoBehaviour
             if(gameObject != null)
             {
                 if(Random.Range(0,1f)<PlayerStats.coinChance) Coin.Spawn(transform.position);
-                //SoundSystem.Play(SoundSystem.ENEMY_DEATH_01, transform.position);
                 Effect.Play("Explosion2", EffectInfo.PosRotScale(transform.position + Vector3.up * 0.2f, 0, 0.7f).SetColor(Color.gray));
                 Destroy(gameObject);
             }
         });
     }
 
-    protected void CalcLineOfSight()
-    {
-        hasLineOfSight = HasLineOfSight();
-    }
+    protected void CalcLineOfSight() => hasLineOfSight = HasLineOfSight();
     protected bool HasLineOfSight()
     {
         RaycastHit2D hit = Physics2D.Raycast(transform.position, transform.GetDirToPlayer(), 30, LayerMask.GetMask(new string[] { "Player", "WorldStatic" }));
