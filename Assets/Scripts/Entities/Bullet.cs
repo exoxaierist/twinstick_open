@@ -10,6 +10,7 @@ public class Bullet : MonoBehaviour
     {
         Bullet instance = SpawnBullet(position, info,onHit,onFinish);
 
+        //burst fire
         info.damage = (int)(info.damage * 0.5f);
         for (int i = 0; i < info.additionalBurst; i++)
         {
@@ -70,9 +71,9 @@ public class Bullet : MonoBehaviour
 
     private void Update()
     {
+        //finish
         if(distanceTraveled>maxDistance)
         {
-            //SoundSystem.Play(SoundSystem.ACTION_HIT_SECONDARY.GetRandom(), transform.position, 0.3f);
             PlayEffect(new(0, -0.5f));
             onFinish?.Invoke(new() { direction = direction, position = child.transform.position });
             pool.Release(gameObject);
@@ -85,23 +86,25 @@ public class Bullet : MonoBehaviour
         Vector2 frameDir = direction;
         if (attackInfo.isStoned) frameDir = frameDir.Rotate(Mathf.Sin(Time.time * 15 *(1/attackInfo.stoneStrength) + stonedRandomPhase) * 40 *attackInfo.stoneStrength);
 
+        //calc collision
         Vector2 frameMovement = bulletSpeed * Time.deltaTime * frameDir;
         RotateToDirection(frameMovement);
         distanceTraveled += frameMovement.magnitude;
         BulletHit hitContext = CheckHit(frameMovement);
+
         if (!hitContext.isHit)
         {
-            //doesn't hit anything
+            //didn't hit anything
             transform.Translate(frameMovement);
         }
         else if (hitContext.type == HitColliderType.Entity)
         {
             //hits entity
-            //aging damage calc
+
+            //aging perk damage calc
             if(attackInfo.attacker == Entity.Player && Player.HasPerk(Perk.PERK_AGING))
-            {
                 attackInfo.damage = baseDamage + (int)Mathf.Lerp(0, (Player.GetPerk(Perk.PERK_AGING) as PerkAging).maxDamage, distanceTraveled / maxDistance);
-            }
+            
             if(hitContext.hp!=null) hitContext.hp.Damage(attackInfo);
             transform.Translate((hitContext.hitInfo.point - (Vector2)child.position) + frameDir*0.3f);
             ChainReaction(hitContext.hitInfo.collider); 
@@ -110,14 +113,15 @@ public class Bullet : MonoBehaviour
             PlayEffect(new(0, -0.5f));
 
             if (!attackInfo.penetrate) 
-            { 
+            {
+                //hit entity and release
+
                 //explosion perk
-                if(attackInfo.attacker == Entity.Player 
+                if (attackInfo.attacker == Entity.Player
                     && Player.HasPerk(Perk.PERK_EXPLOSION)
-                    && UnityEngine.Random.Range(0,1f) < ((PerkExplosion)Player.GetPerk(Perk.PERK_EXPLOSION)).explosionChance)
-                {
-                    Explosion.Explode(hitContext.hitInfo.point, 1.2f, attackInfo);
-                }
+                    && UnityEngine.Random.Range(0, 1f) < ((PerkExplosion)Player.GetPerk(Perk.PERK_EXPLOSION)).explosionChance)
+                { Explosion.Explode(hitContext.hitInfo.point, 1.2f, attackInfo); }
+
                 onHit?.Invoke(hitContext); 
                 pool.Release(gameObject); 
             }
