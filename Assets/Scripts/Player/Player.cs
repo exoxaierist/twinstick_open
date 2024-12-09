@@ -8,8 +8,9 @@ using UnityEngine.InputSystem;
 
 public class Player : MonoBehaviour
 {
-    public static Player main;
     private GameObjectPool headUpTextPool = new("HeadUpText");
+
+    public static Player main;
 
     public bool godMode = false;
     private float baseMoveSpeed = 5;
@@ -24,12 +25,10 @@ public class Player : MonoBehaviour
         get { return _interactable; }
         set
         {
-            if (_interactable != value)
-            {
-                _interactable?.InspectEnd();
-                _interactable = value;
-                _interactable?.InspectStart();
-            }
+            if (_interactable == value) return;
+            _interactable?.InspectEnd();
+            _interactable = value;
+            _interactable?.InspectStart();
         }
     }
 
@@ -45,7 +44,6 @@ public class Player : MonoBehaviour
     private InputAction attackAction;
     private InputAction aimAction;
     public Vector2 playerAimPosition;
-    
 
     //states
     private bool canBeHit = true;
@@ -53,13 +51,12 @@ public class Player : MonoBehaviour
 
     private bool isJumping = false;
     private bool isInAnimation = false;
-    [HideInInspector]
     public bool isSleeping = false;
 
     [HideInInspector] public bool isFacingRight;
     [HideInInspector] public Vector2 playerAimDirection;
 
-    //infos
+    //attack infos
     public AttackInfo attackInfo = new();
     public AttackInfo deathBlow;
 
@@ -78,8 +75,8 @@ public class Player : MonoBehaviour
     }
 
     //perks
-    public const int maxMaxPerkCount = 35;
-    public static int maxPerkCount = 10;
+    public const int maxPerkCount = 35;
+    public static int currentMaxPerkCount = 10;
     public static List<Perk> perks = new();
 
     //events
@@ -87,10 +84,10 @@ public class Player : MonoBehaviour
     public static Action onPlayerSpawn;
     public static Action onEnemyKill;
 
-
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
     public static void Reset()
     {
+        //reset some static variables
         perks = new();
         shieldCount = 0;
         coinCount = 0;
@@ -109,22 +106,24 @@ public class Player : MonoBehaviour
         hp = GetComponent<Hp>();
         input = GetComponent<PlayerInput>();
 
-        //assign input action
-        moveAction = input.actions.FindAction("Movement");
-        attackAction = input.actions.FindAction("Attack");
-        aimAction = input.actions.FindAction("Aim");
+        pawn.moveSpeed = baseMoveSpeed * PlayerStats.moveSpeed;
 
         //assign hp delegate
         hp.maxHealth = baseHealth + PlayerStats.additionalHealth;
         hp.onReceiveAttack += OnReceiveAttack;
         hp.onDeath += OnDeath;
+
+        //assign input action
+        moveAction = input.actions.FindAction("Movement");
+        attackAction = input.actions.FindAction("Attack");
+        aimAction = input.actions.FindAction("Aim");
+
+        //set hud ui
         UIManager.main.ShowHud();
         UIStats.SetTarget(hp);
 
-        pawn.moveSpeed = baseMoveSpeed * PlayerStats.moveSpeed;
-        onPlayerSpawn?.Invoke();
         UpdateAttackInfo();
-
+        onPlayerSpawn?.Invoke();
     }
     private void Update()
     {
@@ -286,7 +285,7 @@ public class Player : MonoBehaviour
         if (perk == null) return false;
 
         Perk existing = GetPerk(perk.ID);
-        if (existing == null) return perks.Count < maxPerkCount;
+        if (existing == null) return perks.Count < currentMaxPerkCount;
         if (existing != null && existing.level == existing.maxLevel) return false;
         return true;
     }
@@ -318,10 +317,7 @@ public class Player : MonoBehaviour
         AddPerk(newPerk);
     }
 
-    public static bool HasPerk(string ID)
-    {
-        return GetPerk(ID) != null;
-    }
+    public static bool HasPerk(string ID) => GetPerk(ID) != null;
 
     public static Perk GetPerk(string ID)
     {
@@ -349,7 +345,7 @@ public class Player : MonoBehaviour
     {
         Collider2D[] hits = Physics2D.OverlapCircleAll(transform.position, searchRadius, LayerMask.GetMask("Interactable"));
         Collider2D closest = null;
-        float closestDist = 20;
+        float closestDist = searchRadius + 10;
         if (hits.Length > 0)
         {
             foreach (Collider2D hit in hits)
@@ -357,7 +353,7 @@ public class Player : MonoBehaviour
                 if(hit.TryGetComponent(out IInteractable interact))
                 {
                     float dist = Vector2.Distance(transform.position, hit.transform.position);
-                    if (interact.CanInteract() && dist < interactRadius && dist < closestDist)
+                    if (interact.IsInteractable() && dist < interactRadius && dist < closestDist)
                     {
                         closest = hit;
                         closestDist = dist;
@@ -420,6 +416,7 @@ public class Player : MonoBehaviour
         }
         else { UIManager.main.HitVignette(); }
 
+        #region Perk Effects
         //tank
         if (HasPerk(Perk.PERK_TANK) && info.attackType == AttackType.Contact)
         {
@@ -460,12 +457,14 @@ public class Player : MonoBehaviour
                 }
             }
         }
+        #endregion
 
         //misc effects
         canBeHit = false;
+        this.Delay(immuneTimer, () => canBeHit = true);
+
         visual.sprite.HitEffect();
         pawn.AddForce(info.direction * 5 * info.knockBack);
-        this.Delay(immuneTimer, () => canBeHit = true);
         if (godMode) return new() { damage = 0 };
         return info;
     }
@@ -488,6 +487,7 @@ public class Player : MonoBehaviour
         StartCoroutine(MoveForSeconds(1, moveInput));
     }
 
+    //used on changing room
     private IEnumerator MoveForSeconds(float second, Vector2 moveInput)
     {
         isInAnimation = true;
