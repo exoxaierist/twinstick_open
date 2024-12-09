@@ -45,21 +45,18 @@ public class Item : MonoBehaviour, IInteractable
         info.name = Locale.Get(info.ID + "_NAME");
         info.description = Locale.Get(info.ID + "_DESC");
         visual = GetComponent<VisualHandler>();
+
+        //set perk image for perk items
         if (!info.ID.StartsWith("PERK")) visual.sprite.sprite = SpriteLib.Get(info.ID);
     }
-    public bool CanInteract() => canPickup;
-    public void Hide() { }
-    public void Show() { }
+
+    public bool IsInteractable() => canPickup;
     public void InspectStart() => ShowUI();
     public void InspectEnd() => HideUI();
     public void Interact() => OnInteract();
 
     protected virtual bool CanAcquire() => true;
     protected virtual void OnAcquire() { }
-
-    /// <summary>
-    /// override for deep rewriting pickup logic
-    /// </summary>
     protected virtual void OnInteract()
     {
         if (CanAcquire()) Acquire();
