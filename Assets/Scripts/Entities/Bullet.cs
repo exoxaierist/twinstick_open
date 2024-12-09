@@ -43,21 +43,23 @@ public class Bullet : MonoBehaviour
     public Sprite fireSprite;
     public Sprite largeSprite;
 
-    private bool isEnemy = false;
-    private float bulletRadius = 0.35f;
-    private float bulletSpeed = 10;
-    private float maxDistance = 10;
-    private float distanceTraveled = 0;
+    private bool isEnemy;
+    private float bulletRadius;
+    private float bulletSpeed;
+    private float maxDistance;
+    private float distanceTraveled;
     private int baseDamage;
     protected AttackInfo attackInfo;
-    private Action<BulletHit> onHit;
-    private Action<BulletFinish> onFinish;
-    private List<GameObject> ignore = new();
-
     private Vector2 direction;
     private LayerMask entityMask;
     private LayerMask collisionMask;
-    private float randomPhase;
+    private HashSet<GameObject> ignoreHit = new();
+
+    private Action<BulletHit> onHit;
+    private Action<BulletFinish> onFinish;
+
+
+    private float stonedRandomPhase;
 
     private void Awake()
     {
@@ -76,17 +78,17 @@ public class Bullet : MonoBehaviour
             pool.Release(gameObject);
             return;
         }
-        BulletHit hitContext;
 
+        //bullet behaviour
         if(attackInfo.isHoming) direction = Homing(direction);
         if (attackInfo.doBend) direction = direction.Rotate(attackInfo.bendStrength*Time.deltaTime);
         Vector2 frameDir = direction;
-        if (attackInfo.isStoned) frameDir = frameDir.Rotate(Mathf.Sin(Time.time * 15 *(1/attackInfo.stoneStrength) + randomPhase) * 40 *attackInfo.stoneStrength);
+        if (attackInfo.isStoned) frameDir = frameDir.Rotate(Mathf.Sin(Time.time * 15 *(1/attackInfo.stoneStrength) + stonedRandomPhase) * 40 *attackInfo.stoneStrength);
 
         Vector2 frameMovement = bulletSpeed * Time.deltaTime * frameDir;
-        distanceTraveled += frameMovement.magnitude;
-        hitContext = CheckHit(frameMovement);
         RotateToDirection(frameMovement);
+        distanceTraveled += frameMovement.magnitude;
+        BulletHit hitContext = CheckHit(frameMovement);
         if (!hitContext.isHit)
         {
             //doesn't hit anything
@@ -119,7 +121,7 @@ public class Bullet : MonoBehaviour
                 onHit?.Invoke(hitContext); 
                 pool.Release(gameObject); 
             }
-            else ignore.Add(hitContext.hitInfo.collider.gameObject);
+            else ignoreHit.Add(hitContext.hitInfo.collider.gameObject);
         }
         else if (hitContext.type == HitColliderType.Wall)
         {
@@ -128,7 +130,7 @@ public class Bullet : MonoBehaviour
             SoundSystem.Play(SoundSystem.ACTION_HIT_SECONDARY.GetRandom(), transform.position, 0.2f);
             if (attackInfo.bounceCount > 0)
             {
-                ignore.Clear();
+                ignoreHit.Clear();
                 attackInfo.bounceCount--;
                 distanceTraveled = 0;
                 direction = Vector2.Reflect(direction, hitContext.hitInfo.normal);
@@ -154,13 +156,14 @@ public class Bullet : MonoBehaviour
         isEnemy = _info.attacker==Entity.Enemy;
         maxDistance = _info.bulletMaxDist;
         distanceTraveled = 0;
-        randomPhase = UnityEngine.Random.Range(0, 100f);
+        stonedRandomPhase = UnityEngine.Random.Range(0, 100f);
         direction = attackInfo.direction;
         onHit = _onHit;
         onFinish = _onFinish;
         baseDamage = _info.damage;
-        ignore.Clear();
+        ignoreHit.Clear();
 
+        //set material by shooter
         if (isEnemy)
         {
             sprite.material = enemyMat;
@@ -171,6 +174,7 @@ public class Bullet : MonoBehaviour
             sprite.material = playerMat;
             entityMask = LayerMask.GetMask("Enemy");
         }
+        //set sprite and bullet size
         if (attackInfo.bulletType == BulletType.Normal) { sprite.sprite = normalSprite; bulletRadius = 0.35f; }
         else if (attackInfo.bulletType == BulletType.Small) {sprite.sprite = smallSprite; bulletRadius = 0.24f; }
         else if(attackInfo.bulletType == BulletType.Tracking) { sprite.sprite = trackingSprite; }
@@ -184,7 +188,7 @@ public class Bullet : MonoBehaviour
         BulletHit hitContextCol = new() { isHit = false, dist = 10000 };
         //hit
         RaycastHit2D[] hits = Physics2D.CircleCastAll(child.position, bulletRadius * 0.5f, frameMovement, frameMovement.magnitude + 0.05f, entityMask.value)
-            .Where(x=>!ignore.Contains(x.collider.gameObject))
+            .Where(x=>!ignoreHit.Contains(x.collider.gameObject))
             .OrderBy(x => x.distance)
             .ToArray();
         int index = -1;
@@ -199,9 +203,6 @@ public class Bullet : MonoBehaviour
             hitContext.isHit = true;
             hitContext.dist = entityHit.distance;
             hitContext.type = HitColliderType.Entity;
-            //hitContext.hitPoint = entityHit.point;
-            //hitContext.collider = entityHit.collider;
-            //hitContext.hitNormal = entityHit.normal;
             entityHit.collider.TryGetComponent(out hitContext.hp);
         }
         //collision
@@ -212,9 +213,6 @@ public class Bullet : MonoBehaviour
             hitContextCol.isHit = true;
             hitContextCol.dist = hit.distance;
             hitContextCol.type = HitColliderType.Wall;
-            //hitContextCol.hitPoint = hit.point;
-            //hitContextCol.collider = hit.collider;
-            //hitContextCol.hitNormal = hit.normal;
             hit.collider.TryGetComponent(out hitContextCol.hp);
         }
         return (hitContext.dist < hitContextCol.dist)?hitContext:hitContextCol;
@@ -235,8 +233,9 @@ public class Bullet : MonoBehaviour
         if (attackInfo.chainCount <= 0) return;
         Collider2D[] hits = Physics2D.OverlapCircleAll(child.transform.position, 10, entityMask.value);
 
+        //find closest target
         float closestDist = 10000;
-        Collider2D closest = null;
+        Collider2D closest = hits[0];
         for (int i = 0; i < hits.Length; i++)
         {
             if (hits[i] == col) continue;
@@ -248,6 +247,7 @@ public class Bullet : MonoBehaviour
         }
         if (closest == null) return;
 
+        //set attack info
         AttackInfo newInfo = attackInfo;
         newInfo.damage /=2;
         newInfo.additionalBurst = 0;
@@ -256,8 +256,9 @@ public class Bullet : MonoBehaviour
         newInfo.direction = (closest.transform.position - child.transform.position).normalized;
         newInfo.chainCount -= 1;
         newInfo.bulletType = BulletType.Small;
+
         Bullet instance = Fire(child.transform.position, newInfo);
-        instance.ignore.Add(col.gameObject);
+        instance.ignoreHit.Add(col.gameObject);
     }
 
     protected Vector2 Homing(Vector2 inDir)
@@ -265,6 +266,7 @@ public class Bullet : MonoBehaviour
         Collider2D[] hits = Physics2D.OverlapCircleAll(transform.position, 8, entityMask.value);
         if (hits == null || hits.Length == 0) return inDir;
 
+        //find smallest dot product
         float closestAngle = -2;
         Collider2D closest = hits[0];
         for (int i = 0; i < hits.Length; i++)
