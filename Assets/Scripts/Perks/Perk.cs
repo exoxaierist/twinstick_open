@@ -111,20 +111,8 @@ public class Perk
 
     public static string GetRandomID(List<string> inv)
     {
-        List<string> allCopy = all.ToList();
-        for (int i = 0; i < inv.Count; i++)
-        {
-            for (int j = 0; j < allCopy.Count; j++)
-            {
-                if (inv[i] == allCopy[j])
-                {
-                    allCopy.RemoveAt(j);
-                    break;
-                }
-            }
-        }
-
-        return allCopy[Random.Range(0, allCopy.Count)];
+        string[] pick = all.Except(inv).ToArray();
+        return pick[Random.Range(0, pick.Length)];
     }
 
     public static Perk Get(string perkID)
