@@ -38,7 +38,7 @@ public class Coin : MonoBehaviour
         for (int i = 0; i < 10; i++)
         {
             targetPos = (Vector2)transform.position + Random.insideUnitCircle * 1.5f;
-            if (!Physics2D.OverlapPoint(targetPos)) break;
+            if (!Physics2D.OverlapPoint(targetPos,LayerMask.GetMask("WorldStatic","PawnBlock"))) break;
         }
         transform.DOComplete();
         visual.Jump(targetPos, 0.5f, 0.4f);
