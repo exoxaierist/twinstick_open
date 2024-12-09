@@ -44,6 +44,7 @@ public class Hp : MonoBehaviour
     {
         info = (AttackInfo)onReceiveAttack?.Invoke(info);
 
+        //fire effect
         if(info.attackEffect == AttackEffect.Fire)
         {
             if(fireAttack!=null) StopCoroutine(fireAttack);
@@ -51,6 +52,7 @@ public class Hp : MonoBehaviour
         }
 
         if (info.damage == 0) return;
+
         health = Mathf.Max(0, health - info.damage);
         if(health <= 0 && !isDead)
         {
