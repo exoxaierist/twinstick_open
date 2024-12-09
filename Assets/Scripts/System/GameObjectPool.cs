@@ -1,53 +1,40 @@
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class GameObjectPool
 {
-    private List<GameObject> list;
+    private Queue<GameObject> pool;
     private string prefabName;
 
     public GameObjectPool(string _prefabName)
     {
-        list = new();
+        pool = new();
         prefabName = _prefabName;
     }
 
     public virtual GameObject Get()
     {
-        if (list.Count == 0) Create();
-        int index = list.Count - 1;
-        GameObject item = list[index];
-        if (item == null)
+        if (pool.Count == 0) CreateElement();
+        GameObject element = pool.Dequeue();
+        if (element == null)
         {
             RemoveNull();
-            Create();
-            index = list.Count - 1;
-            item = list[index];
+            return Get();
         }
-
-        list.RemoveAt(index);
-        item.SetActive(true);
-        return item;
+        element.SetActive(true);
+        return element;
     }
 
     public virtual void Release(GameObject item)
     {
         if (item == null) return;
-        list.Add(item);
         item.transform.SetParent(null);
         item.SetActive(false);
+        pool.Enqueue(item);
     }
 
-    protected virtual void Create()
-    {
-        Release(Object.Instantiate(Prefab.Get(prefabName)));
-    }
+    protected virtual void CreateElement() => Release(Object.Instantiate(Prefab.Get(prefabName)));
 
-    private void RemoveNull()
-    {
-        for (int i = 0; i < list.Count; i++)
-        {
-            if (list[i] == null) { list.RemoveAt(i); i--; }
-        }
-    }
+    private void RemoveNull() => pool = new(pool.Where(item => item != null));
 }
