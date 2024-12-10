@@ -13,7 +13,7 @@ public class GameObjectPool
         prefabName = _prefabName;
     }
 
-    public virtual GameObject Get()
+    public GameObject Get()
     {
         if (pool.Count == 0) CreateElement();
         GameObject element = pool.Dequeue();
@@ -25,16 +25,13 @@ public class GameObjectPool
         element.SetActive(true);
         return element;
     }
-
-    public virtual void Release(GameObject item)
+    public void Release(GameObject item)
     {
         if (item == null) return;
         item.transform.SetParent(null);
         item.SetActive(false);
         pool.Enqueue(item);
     }
-
-    protected virtual void CreateElement() => Release(Object.Instantiate(Prefab.Get(prefabName)));
-
+    private void CreateElement() => Release(Object.Instantiate(Prefab.Get(prefabName)));
     private void RemoveNull() => pool = new(pool.Where(item => item != null));
 }
