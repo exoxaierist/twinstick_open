@@ -47,13 +47,13 @@ public class ChickenEnemy : Enemy
 
     private IEnumerator Shoot()
     {
-        yield return new WaitForSeconds(Random.Range(0, 2));
+        yield return Wait.Get(Random.Range(0, 2));
         while (enabled)
         {
             attackInfo.direction = transform.GetDirToPlayer();
             SoundSystem.Play(SoundSystem.ACTION_SHOOT_ENEMY.GetRandom(), transform.position, 0.5f);
             Bullet.Fire((Vector2)transform.position + attackInfo.direction * 0.5f, attackInfo);
-            yield return new WaitForSeconds(Random.Range(6,10));
+            yield return Wait.Get(Random.Range(6,10));
         }
     }
 }

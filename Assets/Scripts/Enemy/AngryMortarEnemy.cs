@@ -27,7 +27,7 @@ public class AngryMortarEnemy : Enemy
 
     private IEnumerator ThrowBomb()
     {
-        yield return new WaitForSeconds(Random.Range(0, 2));
+        yield return Wait.Get(Random.Range(0, 2));
         while (!hp.isDead)
         {
             if (Vector2.Distance(Player.main.transform.position, transform.position) < 9)
@@ -41,11 +41,11 @@ public class AngryMortarEnemy : Enemy
                 if (!Physics2D.OverlapPoint(Player.main.transform.position + Vector3.left * 2, LayerMask.GetMask("WorldStatic", "PawnBlock")))
                     Bomb.Throw(transform.position, Player.main.transform.position+Vector3.left*2, attackInfo);
 
-                yield return new WaitForSeconds(Random.Range(3, 6f));
+                yield return Wait.Get(Random.Range(3, 6f));
             }
             else
             {
-                yield return new WaitForSeconds(0.5f);
+                yield return Wait.Get(0.5f);
             }
         }
     }

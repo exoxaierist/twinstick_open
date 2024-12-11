@@ -29,7 +29,7 @@ public class PerkToDiscard : Selectable, ISubmitHandler
         picker.perkDescText.text = perk.description;
         picker.perkLevelText.text = perk.level + "/" + perk.maxLevel;
         picker.discardElementParent.DOKill();
-        if(Player.perks.Count>15 && !selectWithMouse) picker.discardElementParent.DOAnchorPosY(Mathf.Clamp(-((RectTransform)transform).anchoredPosition.y - 145,0,(Player.maxPerkCount/5)*170 - 500),0.1f).SetUpdate(true);
+        if(Player.perks.Count>15 && !selectWithMouse) picker.discardElementParent.DOAnchorPosY(Mathf.Clamp(-((RectTransform)transform).anchoredPosition.y - 145,0,(Player.currentMaxPerkCount/5)*170 - 500),0.1f).SetUpdate(true);
     }
 
     private void HideHover() 

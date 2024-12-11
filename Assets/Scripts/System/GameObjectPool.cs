@@ -7,12 +7,7 @@ public class GameObjectPool
     private Queue<GameObject> pool;
     private string prefabName;
 
-    public GameObjectPool(string _prefabName)
-    {
-        pool = new();
-        prefabName = _prefabName;
-    }
-
+    public GameObjectPool(string _prefabName) { pool = new(); prefabName = _prefabName; }
     public GameObject Get()
     {
         if (pool.Count == 0) CreateElement();

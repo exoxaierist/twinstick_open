@@ -27,18 +27,18 @@ public class MortarEnemy : Enemy
 
     private IEnumerator ThrowBomb()
     {
-        yield return new WaitForSeconds(Random.Range(0, 2));
+        yield return Wait.Get(Random.Range(0, 2));
         while (!hp.isDead)
         {
             if(Vector2.Distance(Player.main.transform.position,transform.position) < 9)
             {
                 Bomb.Throw(transform.position, Player.main.transform.position, attackInfo);
 
-                yield return new WaitForSeconds(Random.Range(3, 6f));
+                yield return Wait.Get(Random.Range(3, 6f));
             }
             else
             {
-                yield return new WaitForSeconds(0.5f);
+                yield return Wait.Get(0.5f);
             }
         }
     }

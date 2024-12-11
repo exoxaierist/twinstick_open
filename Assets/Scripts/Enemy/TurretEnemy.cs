@@ -37,27 +37,27 @@ public class TurretEnemy : Enemy
 
     private IEnumerator Shoot()
     {
-        while (!isDead)
+        while (!hp.isDead)
         {
             if (hasLineOfSight && isActive)
             {
                 SetMovementBehaviour(MovementBehaviour.None);
                 attackInfo.direction = transform.GetDirToPlayer();
                 activeLaser = Laser.Spawn((Vector2)transform.position + attackInfo.direction * 0.5f, attackInfo.direction,thickness:0.1f);
+                Bullet.Fire((Vector2)transform.position + attackInfo.direction * 0.5f + Vector2.up * 0.5f, attackInfo);
                 knockBackAlpha = 0;
                 this.Delay(1.3f, () =>
                 {
-                    if(!isDead)
+                    if(!hp.isDead)
                     {
                         SoundSystem.Play(SoundSystem.ACTION_SHOOT_ENEMY.GetRandom(), transform.position, 0.5f);
-                        Bullet.Fire((Vector2)transform.position + attackInfo.direction * 0.5f + Vector2.up * 0.5f, attackInfo);
                         knockBackAlpha = 1;
                         SetMovementBehaviour(MovementBehaviour.Wander);
                     }
                 });
-                yield return new WaitForSeconds(4);
+                yield return Wait.Get(4);
             }
-            else yield return new WaitForSeconds(0.1f); 
+            else yield return Wait.Get(0.1f); 
         }
     }
 }

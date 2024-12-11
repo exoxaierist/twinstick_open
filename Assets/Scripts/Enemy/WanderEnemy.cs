@@ -1,6 +1,4 @@
 using System.Collections;
-using System.Collections.Generic;
-using System.Diagnostics;
 using UnityEngine;
 
 public class WanderEnemy : Enemy
@@ -20,7 +18,7 @@ public class WanderEnemy : Enemy
         Initialize();
 
         pawn = GetComponent<Pawn>();
-        pawn.onHitWall += OnHitWall;
+        //pawn.onHitWall += OnHitWall;
     }
 
     private void Start()
@@ -49,12 +47,12 @@ public class WanderEnemy : Enemy
         {
             if (!hostile)
             {
-                yield return new WaitForSeconds(Random.Range(0.5f, 2));
+                yield return Wait.Get(Random.Range(0.5f, 2));
                 yield return MoveForSeconds(Random.Range(0.3f, 1.3f), Random.insideUnitCircle.normalized);
             }
             else
             {
-                yield return new WaitForSeconds(Random.Range(0.2f, 1));
+                yield return Wait.Get(Random.Range(0.2f, 1));
                 yield return MoveForSeconds(Random.Range(0.5f, 1.8f), transform.GetDirToPlayer().Rotate(Random.Range(-40f,40f)));
             }
         }

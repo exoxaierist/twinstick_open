@@ -40,7 +40,7 @@ public class BossBombsmith : Boss
                 float interval = 1;
                 for (int c = 0; c < count; c++)
                 {
-                    yield return new WaitForSeconds(interval);
+                    yield return Wait.Get(interval);
 
                     for (int i = 0; i < 20; i++)
                     {
@@ -62,7 +62,7 @@ public class BossBombsmith : Boss
                 //throw big at player
                 for (int c = 0; c < 5; c++)
                 {
-                    yield return new WaitForSeconds(0.8f);
+                    yield return Wait.Get(0.8f);
                     Bomb.Throw(transform.position+Vector3.up, Player.main.transform.position, attackInfo);
                     for (int i = 0; i < 8; i++)
                     {
@@ -72,7 +72,7 @@ public class BossBombsmith : Boss
                     }
                 }
             }
-            yield return new WaitForSeconds(Random.Range(1, 4.5f));
+            yield return Wait.Get(Random.Range(1, 4.5f));
         }
     }
 }

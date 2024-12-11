@@ -128,17 +128,26 @@ public class PathFinder : MonoBehaviour
     {
         List<Vector2> newPath = new();
         Node currentNode = endNode;
-
-        while (currentNode != startNode)
+        Node targetNode = currentNode.parent;
+        Node prevTargetNode = targetNode;
+        newPath.Add(currentNode.Pos());
+        while (targetNode != null && targetNode.parent !=null)
         {
-/*
-            Vector2 from = (Vector2)ceilingTilemap.CellToWorld(currentNode.position) + new Vector2(0.5f, 0.5f) + currentNode.offset;
-            Vector2 to = (Vector2)ceilingTilemap.CellToWorld(currentNode.parent.position) + new Vector2(0.5f, 0.5f) + currentNode.offset;
+            /*Vector2 from = currentNode.Pos();
+            Vector2 to = targetNode.Pos();
             RaycastHit2D hit = Physics2D.CircleCast(from, 0.1f, to - from, Vector2.Distance(from, to), LayerMask.GetMask("WorldStatic", "PawnBlock"));
-            if(!hit) newPath.Add((Vector2)ceilingTilemap.CellToWorld(currentNode.position) + new Vector2(0.5f,0.5f) + currentNode.offset);
-            */
-            newPath.Add((Vector2)ceilingTilemap.CellToWorld(currentNode.position) + new Vector2(0.5f,0.5f) + currentNode.offset);
-            currentNode = currentNode.parent;
+            if (!hit)
+            {
+                if (targetNode.parent == null) newPath.Add(targetNode.Pos());
+                prevTargetNode = targetNode;
+                targetNode = targetNode.parent;
+                continue;
+            }*/
+
+            newPath.Add(prevTargetNode.Pos());
+            currentNode = prevTargetNode;
+            targetNode = currentNode.parent;
+            prevTargetNode = targetNode;
         }
         newPath.Reverse();
 
@@ -150,7 +159,7 @@ public class PathFinder : MonoBehaviour
     {
         for (int i = 0; i < path.Count - 1; i++)
         {
-            Debug.DrawLine(path[i], path[i + 1], Color.cyan, 0.5f);
+            Debug.DrawLine(path[i], path[i + 1], Color.cyan, 0.4f);
         }
     }
 
@@ -218,6 +227,8 @@ public class PathFinder : MonoBehaviour
         {
             get { return gCost + hCost; }
         }
+
+        public Vector2 Pos() => (Vector2)ceilingTilemap.CellToWorld(position) + new Vector2(0.5f, 0.5f) + offset;
 
         //pooling
         private static Queue<Node> pool = new();

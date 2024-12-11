@@ -45,7 +45,7 @@ public class SpiralJumperEnemy : Enemy
                 Bullet.Fire(transform.position, attackInfo);
             });
 
-            yield return new WaitForSeconds(4);
+            yield return Wait.Get(4);
         }
     }
 

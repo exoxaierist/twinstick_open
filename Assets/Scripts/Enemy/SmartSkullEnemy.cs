@@ -45,7 +45,7 @@ public class SmartSkullEnemy : Enemy
 
     private IEnumerator Shoot()
     {
-        yield return new WaitForSeconds(1);
+        yield return Wait.Get(1);
         while (enabled)
         {
             int count = Random.Range(3, 7);
@@ -54,9 +54,9 @@ public class SmartSkullEnemy : Enemy
                 attackInfo.direction = (((Vector2)Player.main.transform.position + Player.main.pawn.unscaledVelocity*0.5f) - (Vector2)transform.position).normalized;
                 SoundSystem.Play(SoundSystem.ACTION_SHOOT_ENEMY.GetRandom(), transform.position, 0.5f);
                 Bullet.Fire((Vector2)transform.position + attackInfo.direction * 0.5f, attackInfo);
-                yield return new WaitForSeconds(2.5f);
+                yield return Wait.Get(2.5f);
             }
-            yield return new WaitForSeconds(Random.Range(1, 5f));
+            yield return Wait.Get(Random.Range(1, 5f));
         }
     }
 }

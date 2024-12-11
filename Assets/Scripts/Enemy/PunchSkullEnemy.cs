@@ -46,7 +46,7 @@ public class PunchSkullEnemy : Enemy
 
     private IEnumerator Shoot()
     {
-        yield return new WaitForSeconds(1);
+        yield return Wait.Get(1);
         while (enabled)
         {
             int count = Random.Range(3, 7);
@@ -55,9 +55,9 @@ public class PunchSkullEnemy : Enemy
                 attackInfo.direction = transform.GetDirToPlayer();
                 SoundSystem.Play(SoundSystem.ACTION_SHOOT_ENEMY.GetRandom(), transform.position, 0.5f);
                 Bullet.Fire((Vector2)transform.position + attackInfo.direction * 0.5f, attackInfo);
-                yield return new WaitForSeconds(2);
+                yield return Wait.Get(2);
             }
-            yield return new WaitForSeconds(Random.Range(1, 4f));
+            yield return Wait.Get(Random.Range(1, 4f));
         }
     }
 }

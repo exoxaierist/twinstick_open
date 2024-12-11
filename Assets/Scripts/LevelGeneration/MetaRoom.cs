@@ -87,7 +87,13 @@ public class MetaRoom : MonoBehaviour
                 AddFirstRoom(roomList.GetSpawnRoom());
                 gameObject.name = "Spawn";
                 break;
-            case RoomType.Finish:
+            case RoomType.Boss:
+                isFriendly = false;
+                info.isCleared = false;
+                AddFirstRoom(BossInfo.GetRoom(info.bossId));
+                gameObject.name = "Boss " + info.bossId;
+                break;
+            /*case RoomType.Finish:
                 isFriendly = true;
                 info.isCleared = true;
                 AddFirstRoom(roomList.GetFinishRoom());
@@ -96,13 +102,7 @@ public class MetaRoom : MonoBehaviour
                 isFriendly = true;
                 info.isCleared = true;
                 AddFirstRoom(optionalTestRoom);
-                break;
-            case RoomType.Boss:
-                isFriendly = false;
-                info.isCleared = false;
-                AddFirstRoom(BossInfo.GetRoom(info.bossId));
-                gameObject.name = "Boss " + info.bossId;
-                break;
+                break;*/
         }
 
         //connect portal
@@ -110,6 +110,8 @@ public class MetaRoom : MonoBehaviour
         if (info.downConnected) CreatePortal(Direction.Down, (a, b) => a.y > b.y);
         if (info.rightConnected) CreatePortal(Direction.Right, (a, b) => a.x < b.x);
         if (info.leftConnected) CreatePortal(Direction.Left, (a, b) => a.x > b.x);
+
+        CreateSideWall(ceilingTilemap.cellBounds,Vector2.zero);
 
         transform.position = new(info.x * LevelManager.roomGap, info.y * LevelManager.roomGap, 0);
         GetWalkablePos();
@@ -282,7 +284,6 @@ public class MetaRoom : MonoBehaviour
             }
 
             Destroy(room.gameObject);
-            roomList.UndoRandomPick();
         }
     }
     //places room based on connection sockets(door pieces)
@@ -292,14 +293,14 @@ public class MetaRoom : MonoBehaviour
         if (!TryPlaceRoom(roomToPlace, 
             (Vector2)doorA.transform.position + (dir * offsetA) + ((doorA.direction == Direction.Up) ? Vector2.up : Vector2.zero), 
             doorB.offset + (dir * offsetB) + ((doorB.direction == Direction.Up) ? Vector2.up : Vector2.zero))) return false;
-        ConnectDoor(doorA, offsetA, length);
+        ConnectMainSockets(doorA, offsetA, length);
         return true;
     }
     //places room raw with just the position of the new room
     private bool TryPlaceRoom(Room roomToPlace, Vector2 startingPos, Vector2 doorOffset)
     {
-        if (!CheckAreaClear(roomToPlace.roomAreaTilemap, startingPos, doorOffset)) return false;
-        RemoveCeiling(roomToPlace.roomAreaTilemap, startingPos, doorOffset);
+        if (!CheckAreaClear(roomToPlace.floorTilemap, startingPos, doorOffset)) return false;
+        RemoveCeiling(roomToPlace.floorTilemap, startingPos, doorOffset);
         if (roomToPlace.pathBlockTilemap != null) AddPathBlockMask(roomToPlace.pathBlockTilemap, startingPos, doorOffset);
         
         roomToPlace.transform.position = startingPos - doorOffset;
@@ -355,7 +356,7 @@ public class MetaRoom : MonoBehaviour
         Destroy(portal.gameObject);
     }
     //removes the ceiling tiles and creates side walls for newly placed connections
-    private void ConnectDoor(ConnectionSocket socket, int offset, int length)
+    private void ConnectMainSockets(ConnectionSocket socket, int offset, int length)
     {
         socket.appliedLength = length;
         socket.appliedOffset = offset;
@@ -368,7 +369,6 @@ public class MetaRoom : MonoBehaviour
         for (int i = 0; i < length+(socket.direction.IsHorizontal()?1:0); i++) 
         {
             ceilingTilemap.SetTile(pos + dir * (i + offset) + ceilingOffset, null);
-            CreateSideWall(pos + sidewallOffset + dir * (i + offset));
         }
     }
 
@@ -408,6 +408,18 @@ public class MetaRoom : MonoBehaviour
         }
         return true;
     }
+    private bool CheckAreaClear(BoundsInt bounds)
+    {
+        for (int x = bounds.xMin; x < bounds.xMax; x++)
+        {
+            for (int y = bounds.yMin; y < bounds.yMax; y++)
+            {
+                Vector3Int pos = new Vector3Int(x, y, 0);
+                if (areaMaskTilemap.HasTile(pos)) return false;
+            }
+        }
+        return true;
+    }
 
     #endregion
 
@@ -433,7 +445,21 @@ public class MetaRoom : MonoBehaviour
                 }
             }
         }
-        CreateSideWall(bounds, startingPos - doorOffset);
+    }
+    private void RemoveCeiling(BoundsInt bounds)
+    {
+        for (int x = bounds.xMin; x < bounds.xMax; x++)
+        {
+            for (int y = bounds.yMin; y < bounds.yMax; y++)
+            {
+                Vector3Int pos = new Vector3Int(x, y, 0);
+                AddToMask(pos);
+                ceilingTilemap.SetTile(pos, null);
+                pos.y -= 1;
+                AddToMask(pos);
+                ceilingTilemap.SetTile(pos, null);
+            }
+        }
     }
 
     //path block mask for blocking PathFinder route finds
@@ -456,7 +482,6 @@ public class MetaRoom : MonoBehaviour
                 }
             }
         }
-        CreateSideWall(bounds, startingPos - doorOffset);
     }
 
     private void CreateSideWall(BoundsInt bounds, Vector2 pivot)
@@ -465,23 +490,14 @@ public class MetaRoom : MonoBehaviour
         {
             for (int y = bounds.yMin; y < bounds.yMax; y++)
             {
-                CreateSideWall(new Vector2(x, y) + pivot);
+                Vector3Int pos = new(x, y, 0);
+                if (!ceilingTilemap.HasTile(pos) && ceilingTilemap.HasTile(pos + new Vector3Int(0, 1)))
+                {
+                    sideWallTilemap.SetTile(pos + new Vector3Int(0, 1), sideWallTile);
+                    if (ceilingTilemap.HasTile(pos + new Vector3Int(1, 1))) sideWallTilemap.SetTile(pos + new Vector3Int(1, 1), sideWallTile);
+                    if (ceilingTilemap.HasTile(pos + new Vector3Int(-1, 1))) sideWallTilemap.SetTile(pos + new Vector3Int(-1, 1), sideWallTile);
+                }
             }
-        }
-    }
-    private void CreateSideWall(Vector2 position) => CreateSideWall(Vector3Int.FloorToInt(position));
-    private void CreateSideWall(Vector3Int pos)
-    {
-        if(!ceilingTilemap.HasTile(pos) && ceilingTilemap.HasTile(pos + new Vector3Int(0, 1)))
-        {
-            sideWallTilemap.SetTile(pos + new Vector3Int(0, 1), sideWallTile);
-            if (ceilingTilemap.HasTile(pos + new Vector3Int(1, 1))) sideWallTilemap.SetTile(pos + new Vector3Int(1, 1), sideWallTile);
-            if (ceilingTilemap.HasTile(pos + new Vector3Int(-1, 1))) sideWallTilemap.SetTile(pos + new Vector3Int(-1, 1), sideWallTile);
-            return;
-        }
-        if(!ceilingTilemap.HasTile(pos + new Vector3Int(0, 1)))
-        {
-            sideWallTilemap.SetTile(pos + new Vector3Int(0, 1), null);
         }
     }
 

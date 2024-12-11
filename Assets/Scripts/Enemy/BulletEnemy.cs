@@ -45,7 +45,7 @@ public class BulletEnemy : Enemy
 
     private IEnumerator Shoot()
     {
-        yield return new WaitForSeconds(Random.Range(1, 2f));
+        yield return Wait.Get(Random.Range(1, 2f));
         while (enabled)
         {
             int count = Random.Range(3, 7);
@@ -54,9 +54,9 @@ public class BulletEnemy : Enemy
                 attackInfo.direction = transform.GetDirToPlayer();
                 SoundSystem.Play(SoundSystem.ACTION_SHOOT_ENEMY.GetRandom(), transform.position, 0.5f);
                 Bullet.Fire((Vector2)transform.position + attackInfo.direction * 0.5f, attackInfo);
-                yield return new WaitForSeconds(2.5f);
+                yield return Wait.Get(2.5f);
             }
-            yield return new WaitForSeconds(Random.Range(2, 6f));
+            yield return Wait.Get(Random.Range(2, 6f));
         }
     }
 }

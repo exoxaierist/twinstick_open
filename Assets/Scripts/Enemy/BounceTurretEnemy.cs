@@ -38,7 +38,7 @@ public class BounceTurretEnemy : Enemy
 
     private IEnumerator Shoot()
     {
-        while (!isDead)
+        while (!hp.isDead)
         {
             if (hasLineOfSight && isActive)
             {
@@ -48,12 +48,12 @@ public class BounceTurretEnemy : Enemy
                 this.Delay(1.3f, () =>
                 {
                     SoundSystem.Play(SoundSystem.ACTION_SHOOT_ENEMY.GetRandom(), transform.position, 0.5f);
-                    if (!isDead) Bullet.Fire((Vector2)transform.position + attackInfo.direction * 0.5f, attackInfo);
+                    if (!hp.isDead) Bullet.Fire((Vector2)transform.position + attackInfo.direction * 0.5f, attackInfo);
                     SetMovementBehaviour(MovementBehaviour.Wander);
                 });
-                yield return new WaitForSeconds(4);
+                yield return Wait.Get(4);
             }
-            else yield return new WaitForSeconds(0.1f);
+            else yield return Wait.Get(0.1f);
         }
     }
 }

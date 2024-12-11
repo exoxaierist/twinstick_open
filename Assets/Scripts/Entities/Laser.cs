@@ -8,7 +8,7 @@ public class Laser : MonoBehaviour
     public static LaserRef Spawn(Vector2 startPos, Vector2 direction, float duration = 2,float thickness = 0.1f, Action onFinish = null)
     {
         direction.Normalize();
-        RaycastHit2D hit = Physics2D.CircleCast(startPos, 0.34f, direction, 20, LayerMask.GetMask("WorldStatic"));
+        RaycastHit2D hit = Physics2D.CircleCast(startPos, 0.3f, direction, 20, LayerMask.GetMask("WorldStatic"));
         Vector2 endPos = Vector2.zero;
         if (hit) endPos = hit.point;
         else endPos = startPos + direction * 20;

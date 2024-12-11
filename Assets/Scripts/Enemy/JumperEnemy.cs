@@ -43,7 +43,7 @@ public class JumperEnemy : Enemy
                 Bullet.Fire(transform.position, attackInfo);
             });
 
-            yield return new WaitForSeconds(3);
+            yield return Wait.Get(3);
         }
     }
 

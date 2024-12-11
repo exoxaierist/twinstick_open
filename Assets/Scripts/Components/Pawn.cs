@@ -100,10 +100,8 @@ public class Pawn : MonoBehaviour
             //align surface tangent to traceDir
             Vector2 tangent = hit.normal.RightOrtho();
             tangent *= Mathf.Sign(Vector2.Dot(tangent, traceDir));
-
             Vector2 oldTraceDir = traceDir;
             float oldTraceDistance = traceDistance;
-
             traceDir = tangent;
             traceDistance *= Vector2.Dot(tangent, oldTraceDir);
 

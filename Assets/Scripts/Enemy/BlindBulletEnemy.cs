@@ -47,7 +47,7 @@ public class BlindBulletEnemy : Enemy
 
     private IEnumerator Shoot()
     {
-        yield return new WaitForSeconds(Random.Range(0.5f, 5));
+        yield return Wait.Get(Random.Range(0.5f, 5));
         while (enabled)
         {
             SoundSystem.Play(SoundSystem.ACTION_SHOOT_ENEMY.GetRandom(), transform.position, 0.5f);
@@ -56,7 +56,7 @@ public class BlindBulletEnemy : Enemy
             attackInfo.direction = attackInfo.direction.Rotate(-60);
             Bullet.Fire((Vector2)transform.position + attackInfo.direction * 0.5f, attackInfo);
 
-            yield return new WaitForSeconds(Random.Range(1, 2f));
+            yield return Wait.Get(Random.Range(1, 2f));
         }
     }
 }

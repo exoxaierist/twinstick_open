@@ -80,7 +80,7 @@ public class PerkPicker : MonoBehaviour
         if (Player.perks.Count > 15 && Input.mouseScrollDelta.y != 0)
         {
             Vector2 anchorPos = discardElementParent.anchoredPosition;
-            anchorPos.y = Mathf.Clamp(anchorPos.y - Input.mouseScrollDelta.y*30, 0, (Player.maxPerkCount / 5) * 170 - 500);
+            anchorPos.y = Mathf.Clamp(anchorPos.y - Input.mouseScrollDelta.y*30, 0, (Player.currentMaxPerkCount / 5) * 170 - 500);
             discardElementParent.anchoredPosition = anchorPos;
         }
     }
@@ -121,7 +121,7 @@ public class PerkPicker : MonoBehaviour
             }
         });
 
-        rerollPrice += 10;
+        rerollPrice += 5;
         rerollText.text = Locale.Get("UI_REROLL") + " <sprite name=\"coin\"> " + rerollPrice;
         coinText.text = "<sprite name=\"coin\"> " + Player.coinCount.ToString();
 
@@ -134,10 +134,10 @@ public class PerkPicker : MonoBehaviour
     public void ExpandSlots()
     {
         Player.coinCount -= expandPrice;
+        expandPrice += 50;
+        Player.currentMaxPerkCount += 5;
         coinText.text = "<sprite name=\"coin\"> " + Player.coinCount.ToString();
         expandBtnText.text = Locale.Get("UI_EXPAND") + " <sprite name=\"coin\"> " + expandPrice;
-        Player.maxPerkCount += 5;
-        expandPrice += 50;
         for (int i = 0; i < 5; i++)
         {
             GameObject instance = Instantiate(Prefab.Get("PerkToDiscardEmpty"));
@@ -150,7 +150,7 @@ public class PerkPicker : MonoBehaviour
         if (currentPick != null) confirmButton.interactable = true;
 
         if (rerollPrice > Player.coinCount) rerollButton.interactable = false;
-        if (expandPrice > Player.coinCount || Player.maxPerkCount >= Player.maxMaxPerkCount) {
+        if (expandPrice > Player.coinCount || Player.currentMaxPerkCount >= Player.maxPerkCount) {
             pickElements[0].Select();
             expandButton.interactable = false; }
     }
@@ -270,7 +270,7 @@ public class PerkPicker : MonoBehaviour
         rerollPrice = 10;
         coinText.text = "<sprite name=\"coin\"> " + Player.coinCount.ToString();
         if (rerollPrice > Player.coinCount) rerollButton.interactable = false; else rerollButton.interactable = true;
-        if (expandPrice > Player.coinCount || Player.maxPerkCount >= Player.maxMaxPerkCount) expandButton.interactable = false; else expandButton.interactable = true;
+        if (expandPrice > Player.coinCount || Player.currentMaxPerkCount >= Player.maxPerkCount) expandButton.interactable = false; else expandButton.interactable = true;
         rerollText.text = Locale.Get("UI_REROLL") + " <sprite name=\"coin\"> " + rerollPrice;
         expandBtnText.text = Locale.Get("UI_EXPAND") + " <sprite name=\"coin\"> " + expandPrice;
 
@@ -297,7 +297,7 @@ public class PerkPicker : MonoBehaviour
 
             discardElements.Add(instance);
         }
-        for (int i = Player.perks.Count; i < Player.maxPerkCount; i++)
+        for (int i = Player.perks.Count; i < Player.currentMaxPerkCount; i++)
         {
             GameObject instance = Instantiate(Prefab.Get("PerkToDiscardEmpty"));
             instance.transform.SetParent(discardElementParent);

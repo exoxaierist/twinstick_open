@@ -346,19 +346,14 @@ public class Player : MonoBehaviour
         Collider2D[] hits = Physics2D.OverlapCircleAll(transform.position, searchRadius, LayerMask.GetMask("Interactable"));
         Collider2D closest = null;
         float closestDist = searchRadius + 10;
-        if (hits.Length > 0)
+        foreach (Collider2D hit in hits)
         {
-            foreach (Collider2D hit in hits)
+            if (!hit.TryGetComponent(out IInteractable interact)) continue;
+            float dist = Vector2.Distance(transform.position, hit.transform.position);
+            if (interact.IsInteractable() && dist < interactRadius && dist < closestDist)
             {
-                if(hit.TryGetComponent(out IInteractable interact))
-                {
-                    float dist = Vector2.Distance(transform.position, hit.transform.position);
-                    if (interact.IsInteractable() && dist < interactRadius && dist < closestDist)
-                    {
-                        closest = hit;
-                        closestDist = dist;
-                    }
-                }
+                closest = hit;
+                closestDist = dist;
             }
         }
         if (closest == null) { interactable = null; return; }
@@ -492,12 +487,14 @@ public class Player : MonoBehaviour
     {
         isInAnimation = true;
         float time = second;
+        pawn.moveSpeed = baseMoveSpeed;
         while (time > 0)
         {
             time -= Time.deltaTime;
             pawn.MoveInput(moveInput);
             yield return null;
         }
+        pawn.moveSpeed = baseMoveSpeed * PlayerStats.moveSpeed;
         isInAnimation = false;
     }
     #endregion

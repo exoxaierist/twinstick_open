@@ -131,10 +131,8 @@ public class LevelManager : MonoBehaviour
     {
         MetaRoom to = toInfo.metaRoom;
         currentRoom = to;
-        to.OnRoomEnter();
         currentPos = new(toInfo.x, toInfo.y);
         currentRoomNumber = toInfo.roomNumber;
-        onRoomChange?.Invoke(toInfo);
 
         from.gameObject.SetActive(false);
         to.gameObject.SetActive(true);
@@ -146,6 +144,9 @@ public class LevelManager : MonoBehaviour
         else if (direction == Direction.Right) playerPos = to.portalLeft.playerSpawn.position;
         else if (direction == Direction.Left) playerPos = to.portalRight.playerSpawn.position;
         Player.main.MoveRoom(direction, playerPos);
+
+        to.OnRoomEnter();
+        onRoomChange?.Invoke(toInfo);
 
         //set stage visuals
         if(currentRoomNumber == stage3Start)
@@ -181,12 +182,14 @@ public class LevelManager : MonoBehaviour
         int chamberNumber = generatedRoomCount;
         //boss room
         if(chamberNumber > 0 && chamberNumber % 10 == 0)
+        //if(chamberNumber == 1)
         {
             roomInfo.type = RoomType.Boss;
             roomInfo.bossId = Boss.GetRandomId();
+            //roomInfo.bossId = "BOSS_AMALGAMATION";
         }
         //shop room
-        else if (chamberNumber>0 && (chamberNumber+1) % 3 == 0)
+        else if (chamberNumber>1 && (chamberNumber+1) % 3 == 0)
         {
             //add shop
             MetaRoomInfo shopRoomInfo = AddMetaRoomAtDirection(Direction.Right, RoomType.Shop);

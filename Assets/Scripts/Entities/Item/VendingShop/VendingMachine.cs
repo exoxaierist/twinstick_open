@@ -21,9 +21,7 @@ public class VendingMachine : MonoBehaviour, IInteractable
         }
     }
 
-    public bool CanInteract() => !beingUsed;
-    public void Hide() { }
-    public void Show() { }
+    public bool IsInteractable() => !beingUsed;
     public void InspectStart()
     {
         if (beingUsed) return;

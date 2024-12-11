@@ -51,7 +51,7 @@ public class BombaEnemy : Enemy
         for (int i = 0; i < 5; i++)
         {
             visual.sprite.HitEffect();
-            yield return new WaitForSeconds(0.6f);
+            yield return Wait.Get(0.6f);
         }
         Explosion.Explode(transform.position, 2, attackInfo);
         LevelManager.currentRoom.enemyCount -= 1;

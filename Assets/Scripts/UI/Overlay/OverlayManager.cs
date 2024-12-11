@@ -59,14 +59,14 @@ public class OverlayManager : MonoBehaviour
 
             if (i == 0) EventSystem.current.SetSelectedGameObject(ui.gameObject);
         }
-        for (int i = Player.perks.Count; i < Player.maxPerkCount; i++)
+        for (int i = Player.perks.Count; i < Player.currentMaxPerkCount; i++)
         {
             GameObject instance = perkUIEmptyPool.Get();
             instance.transform.SetParent(transform);
             instance.transform.localScale = Vector3.one;
             perkUIEmptyList.Add(instance);
         }
-        for (int i = Player.maxPerkCount; i < Player.maxMaxPerkCount; i++)
+        for (int i = Player.currentMaxPerkCount; i < Player.maxPerkCount; i++)
         {
             GameObject instance = perkUILockedPool.Get();
             instance.transform.SetParent(transform);

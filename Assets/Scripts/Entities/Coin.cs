@@ -6,22 +6,21 @@ public class Coin : MonoBehaviour
 {
     public static GameObjectPool pool = new("Coin");
 
-    public static void Spawn(Vector2 pos, int amount, int count)
-    {
-        for (int i = 0; i < count; i++) Spawn(pos, amount);
-    }
-
     public static void Spawn(Vector2 pos, int _amount = 3)
     {
         if (LevelManager.currentRoom.coinDropAmount >= PlayerStats.roomMaxCoinCount) return; 
         Coin instance = pool.Get().GetComponent<Coin>();
+
         LevelManager.currentRoom.coinDropAmount += _amount;
         instance.visual = instance.GetComponent<VisualHandler>();
         instance.transform.position = pos;
         instance.amount = _amount;
-        instance.lifetime = 10;
-        instance.collected = false;
         instance.ThrowCoin();
+    }
+
+    public static void Spawn(Vector2 pos, int amount, int count)
+    {
+        for (int i = 0; i < count; i++) Spawn(pos, amount);
     }
 
     public float lifetime = 10;
@@ -33,7 +32,9 @@ public class Coin : MonoBehaviour
 
     private void ThrowCoin()
     {
-        SoundSystem.Play(SoundSystem.COIN_SPAWN, transform.position,0.4f);
+        collected = false;
+
+
         Vector3 targetPos = new();
         for (int i = 0; i < 10; i++)
         {
@@ -42,8 +43,11 @@ public class Coin : MonoBehaviour
         }
         transform.DOComplete();
         visual.Jump(targetPos, 0.5f, 0.4f);
+        SoundSystem.Play(SoundSystem.COIN_SPAWN, transform.position,0.4f);
+
         canBeCollected = false;
         this.Delay(0.4f, ()=>canBeCollected = true);
+
         releaseCoroutine = StartCoroutine(ReleaseTimer());
     }
 

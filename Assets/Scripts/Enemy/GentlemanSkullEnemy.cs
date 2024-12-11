@@ -45,7 +45,7 @@ public class GentlemanSkullEnemy : Enemy
 
     private IEnumerator Shoot()
     {
-        yield return new WaitForSeconds(Random.Range(0, 1f));
+        yield return Wait.Get(Random.Range(0, 1f));
         while (enabled)
         {
             attackInfo.direction = transform.GetDirToPlayer().Rotate(UnityEngine.Random.Range(-30,30f));
@@ -62,7 +62,7 @@ public class GentlemanSkullEnemy : Enemy
                     Bullet.Fire(bulletHit.hitInfo.point + bulletHit.hitInfo.normal * 0.2f, attackInfo);
                 }
             });
-            yield return new WaitForSeconds(Random.Range(3, 5f));
+            yield return Wait.Get(Random.Range(3, 5f));
         }
     }
 }

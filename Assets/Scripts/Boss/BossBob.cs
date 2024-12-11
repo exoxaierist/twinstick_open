@@ -46,9 +46,9 @@ public class BossBob : Boss
                 {
                     Spawn((Vector2)Player.main.transform.position + Player.main.pawn.unscaledVelocity + Random.insideUnitCircle * 3, "ENEMY_BOMBA");
                 }
-                yield return new WaitForSeconds(1.5f);
+                yield return Wait.Get(1.5f);
             }
-            yield return new WaitForSeconds(Random.Range(5,9));
+            yield return Wait.Get(Random.Range(5,9));
         }
     }
 

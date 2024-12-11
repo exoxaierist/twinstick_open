@@ -44,7 +44,7 @@ public class BossSkullKing : Boss
         while (!hp.isDead)
         {
             SpawnChild(childIdList[Utility.WeightedRandom(childWeightList)], Random.Range(2, 5));
-            yield return new WaitForSeconds(Random.Range(3,7f));
+            yield return Wait.Get(Random.Range(3,7f));
         }
     }
 

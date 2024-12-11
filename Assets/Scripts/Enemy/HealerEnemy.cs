@@ -83,7 +83,7 @@ public class HealerEnemy : Enemy
                 if (collider.gameObject == gameObject) continue;
                 if (collider.TryGetComponent(out Hp hp)) hp.Heal(attackInfo);
             }
-            yield return new WaitForSeconds(2);
+            yield return Wait.Get(2);
         }
     }
 

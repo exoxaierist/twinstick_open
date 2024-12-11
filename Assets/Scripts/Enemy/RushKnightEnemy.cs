@@ -62,10 +62,10 @@ public class RushKnightEnemy : Enemy
 
                 //set sprite dir
                 SetSpriteDirection(SpriteDirMode.FacePlayer);
-                yield return new WaitForSeconds(0.5f);
+                yield return Wait.Get(0.5f);
             }
 
-            yield return new WaitForSeconds(3);
+            yield return Wait.Get(3);
         }
     }
 }

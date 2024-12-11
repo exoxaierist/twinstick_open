@@ -1,14 +1,12 @@
 using System;
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UIElements;
 
 public static class Utility
 {
     public static IEnumerator DelayCoroutine(float duration, Action callback)
     {
-        yield return new WaitForSeconds(duration);
+        yield return Wait.Get(duration);
         callback();
     }
 

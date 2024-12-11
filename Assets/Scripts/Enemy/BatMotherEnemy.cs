@@ -26,18 +26,18 @@ public class BatMotherEnemy : Enemy
 
     private IEnumerator SpawnBats()
     {
-        yield return new WaitForSeconds(2);
+        yield return Wait.Get(2);
         while (enabled)
         {
             SetMovementBehaviour(MovementBehaviour.None);
             for (int i = 0; i < Random.Range(1,3); i++)
             {
-               Spawn((Vector2)transform.position + Random.insideUnitCircle, ENEMY_BAT);
+               Spawn((Vector2)transform.position + Random.insideUnitCircle, "ENEMY_BAT");
             }
-            yield return new WaitForSeconds(1);
+            yield return Wait.Get(1);
             SetMovementBehaviour(MovementBehaviour.Wander);
 
-            yield return new WaitForSeconds(Random.Range(3, 7));
+            yield return Wait.Get(Random.Range(3, 7));
         }
     }
 }

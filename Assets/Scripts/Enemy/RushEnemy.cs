@@ -45,7 +45,7 @@ public class RushEnemy : Enemy
     private IEnumerator WaitRoutine()
     {
         SetMovementBehaviour(MovementBehaviour.None);
-        yield return new WaitForSeconds(0.7f);
+        yield return Wait.Get(0.7f);
         CalcLineOfSight();
         if (!hasLineOfSight)
         {
@@ -54,7 +54,7 @@ public class RushEnemy : Enemy
             yield break;
         }
         savedDirection = transform.GetDirToPlayer();
-        yield return new WaitForSeconds(0.2f);
+        yield return Wait.Get(0.2f);
         pawn.moveSpeed = fastMovespeed;
         float time = 0.5f;
         while(time>0)
@@ -64,7 +64,7 @@ public class RushEnemy : Enemy
             yield return null;
         }
         pawn.moveSpeed = slowMovespeed;
-        yield return new WaitForSeconds(Random.Range(0.5f,3));
+        yield return Wait.Get(Random.Range(0.5f,3));
         SetMovementBehaviour(MovementBehaviour.Wander);
         waitCoroutine = null;
     }

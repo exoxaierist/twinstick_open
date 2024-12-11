@@ -26,7 +26,7 @@ public class FirebatMotherEnemy : Enemy
 
     private IEnumerator SpawnBats()
     {
-        yield return new WaitForSeconds(2);
+        yield return Wait.Get(2);
         while (enabled)
         {
             SetMovementBehaviour(MovementBehaviour.None);
@@ -34,10 +34,10 @@ public class FirebatMotherEnemy : Enemy
             {
                 Spawn((Vector2)transform.position + Random.insideUnitCircle, "ENEMY_FIREBAT");
             }
-            yield return new WaitForSeconds(1);
+            yield return Wait.Get(1);
             SetMovementBehaviour(MovementBehaviour.Wander);
 
-            yield return new WaitForSeconds(Random.Range(3, 7));
+            yield return Wait.Get(Random.Range(3, 7));
         }
     }
 }

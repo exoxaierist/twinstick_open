@@ -14,7 +14,7 @@ public class RoomPortal : Room
 
     private void OnEnable()
     {
-        pathBlockTilemap = roomAreaTilemap;
+        pathBlockTilemap = floorTilemap;
     }
 
     public void Lock() => GetComponentInChildren<PortalDoor>().Close();

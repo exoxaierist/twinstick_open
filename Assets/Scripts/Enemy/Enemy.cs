@@ -82,7 +82,7 @@ public class Enemy : MonoBehaviour
         while (!hp.isDead)
         {
             OnIntervalUpdate();
-            yield return new WaitForSeconds(UnityEngine.Random.Range(intervalMin, intervalMax));
+            yield return Wait.Get(UnityEngine.Random.Range(intervalMin, intervalMax));
         }
     }
 
@@ -199,7 +199,7 @@ public class Enemy : MonoBehaviour
 
     private void OnTriggerStay2D(Collider2D collider)
     {
-        if (!hp.isDead || !doContactDamage || !collider.CompareTag("Player") || !canContactDamage) return;
+        if (hp.isDead || !doContactDamage || !collider.CompareTag("Player") || !canContactDamage) return;
         canContactDamage = false;
         this.Delay(0.5f, () => canContactDamage = true);
 

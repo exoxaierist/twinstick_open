@@ -77,7 +77,7 @@ public class StoneCrawlerEnemy : Enemy
                 else dir *= moveDist;
                 JumpTo(dir);
             }
-            yield return new WaitForSeconds(2);
+            yield return Wait.Get(2);
         }
     }
 }

@@ -1,7 +1,4 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 [RequireComponent(typeof(Collider2D))]
 public class ShopItem : MonoBehaviour, IInteractable
@@ -14,9 +11,7 @@ public class ShopItem : MonoBehaviour, IInteractable
     private DescriptionUI ui;
     private bool cancelFlag = false;
 
-    public bool CanInteract() => true;
-    public void Hide() { }
-    public void Show() { }
+    public bool IsInteractable() => true;
     public void InspectStart() => ShowUI();
     public void InspectEnd() => HideUI();
     public void Interact() => OnInteract();

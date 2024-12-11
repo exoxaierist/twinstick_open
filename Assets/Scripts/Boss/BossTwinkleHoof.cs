@@ -35,7 +35,7 @@ public class BossTwinkleHoof : Boss
                 SetMovementBehaviour(MovementBehaviour.None);
                 for (int j = 0; j < 3; j++)
                 {
-                    yield return new WaitForSeconds(0.6f);
+                    yield return Wait.Get(0.6f);
                     float time = 1;
                     float shootTimer = 0.2f;
                     Vector2 dir = transform.GetDirToPlayer();
@@ -68,14 +68,14 @@ public class BossTwinkleHoof : Boss
                 SetMovementBehaviour(MovementBehaviour.Wander);
                 for (int i = 0; i < 2; i++)
                 {
-                    yield return new WaitForSeconds(2.5f);
+                    yield return Wait.Get(2.5f);
                     for (int j = 0; j < 4; j++)
                     {
                         Spawn((Vector2)transform.position + Random.insideUnitCircle, "ENEMY_RUSH");
                     }
                 }
             }
-            yield return new WaitForSeconds(Random.Range(1, 4f));
+            yield return Wait.Get(Random.Range(1, 4f));
         }
     }
 }

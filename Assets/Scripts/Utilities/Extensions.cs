@@ -54,7 +54,11 @@ public static class Extensions
     public static void HitEffect(this SpriteRenderer sprite, bool doFlinch = true)
     {
         sprite.material.SetFloat("_Solidity", 1);
-        DOTween.To(x => { if (sprite != null) sprite.material.SetFloat("_Solidity", x); }, 1, 0, 0.05f).SetDelay(0.1f);
+        DOTween.To(x => 
+            { 
+                if (sprite != null) sprite.material.SetFloat("_Solidity", x); 
+            }, 1, 0, 0.05f)
+            .SetDelay(0.1f);
 
         //flinch
         if (!doFlinch) return;

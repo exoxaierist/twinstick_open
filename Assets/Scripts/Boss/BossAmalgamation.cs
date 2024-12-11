@@ -24,7 +24,7 @@ public class BossAmalgamation : Boss {
 
     private IEnumerator BossRoutine()
     {
-        yield return new WaitForSeconds(1);
+        yield return Wait.Get(1);
         while (!hp.isDead)
         {
             float random = Random.Range(0, 1f);
@@ -35,12 +35,13 @@ public class BossAmalgamation : Boss {
                 attackInfo.bounceCount = 0;
                 attackInfo.bulletType = BulletType.Normal;
                 attackInfo.isHoming = false;
+                attackInfo.isStoned = false;
                 attackInfo.bulletMaxDist = 30;
 
                 for (int i = 0; i < 8; i++)
                 {
                     ShootRadial(0);
-                    yield return new WaitForSeconds(0.5f);
+                    yield return Wait.Get(0.4f);
                 }
             }
             else if(random<= step * 2)
@@ -48,29 +49,33 @@ public class BossAmalgamation : Boss {
                 //shoot big bullet
                 attackInfo.bounceCount = 0;
                 attackInfo.bulletType = BulletType.Large;
+                attackInfo.isStoned = true;
+                attackInfo.stoneStrength = 0.8f;
                 attackInfo.isHoming = false;
 
                 AttackInfo secondaryAttackInfo = attackInfo;
                 secondaryAttackInfo.bounceCount = 0;
                 secondaryAttackInfo.bulletType = BulletType.Normal;
                 secondaryAttackInfo.isHoming = false;
+                secondaryAttackInfo.isStoned = false;
 
-                float angle = -150 / 3f;
+                float angle = -180 / 3f;
                 for (int i = 0; i < 6; i++)
                 {
                     attackInfo.direction = GetShootDir(angle);
                     attackInfo.bulletMaxDist = Random.Range(5, 15f);
+                    
                     Bullet.Fire(GetShootPos(angle), attackInfo, null, x =>
                     {
                         float _angle = 0;
-                        for (int i = 0; i < 6; i++)
+                        for (int i = 0; i < 4; i++)
                         {
                             secondaryAttackInfo.direction = Vector2.up.Rotate(_angle);
                             Bullet.Fire(x.position, secondaryAttackInfo);
-                            _angle += 60;
+                            _angle += 90;
                         }
                     });
-                    angle += 20;
+                    angle += 180/6;
                 }
             }
             else if (random <= step * 3)
@@ -79,6 +84,7 @@ public class BossAmalgamation : Boss {
                 attackInfo.bounceCount = 0;
                 attackInfo.bulletType = BulletType.Tracking;
                 attackInfo.isHoming = true;
+                attackInfo.isStoned = false;
                 attackInfo.homingStrength = 0.8f;
                 attackInfo.bulletMaxDist = 15;
                 float angle = -180 / 3f;
@@ -95,6 +101,7 @@ public class BossAmalgamation : Boss {
                 attackInfo.bounceCount = 2;
                 attackInfo.bulletType = BulletType.Large;
                 attackInfo.isHoming = false;
+                attackInfo.isStoned = false;
                 attackInfo.bulletMaxDist = 20;
                 float angle = -360 / 4f;
                 for (int i = 0; i < 8; i++)
@@ -104,7 +111,7 @@ public class BossAmalgamation : Boss {
                     angle += 20;
                 }
             }
-            yield return new WaitForSeconds(Random.Range(1, 6f));
+            yield return Wait.Get(Random.Range(1, 3f));
         }
     }
 

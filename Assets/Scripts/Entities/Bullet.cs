@@ -179,11 +179,11 @@ public class Bullet : MonoBehaviour
             entityMask = LayerMask.GetMask("Enemy");
         }
         //set sprite and bullet size
-        if (attackInfo.bulletType == BulletType.Normal) { sprite.sprite = normalSprite; bulletRadius = 0.35f; }
+        if (attackInfo.bulletType == BulletType.Normal) { sprite.sprite = normalSprite; bulletRadius = 0.3f; }
         else if (attackInfo.bulletType == BulletType.Small) {sprite.sprite = smallSprite; bulletRadius = 0.24f; }
-        else if(attackInfo.bulletType == BulletType.Tracking) { sprite.sprite = trackingSprite; }
-        else if(attackInfo.bulletType == BulletType.Fire) { sprite.sprite = fireSprite; }
-        else if(attackInfo.bulletType == BulletType.Large) { sprite.sprite = largeSprite; }
+        else if(attackInfo.bulletType == BulletType.Tracking) { sprite.sprite = trackingSprite; bulletRadius = 0.3f; }
+        else if(attackInfo.bulletType == BulletType.Fire) { sprite.sprite = fireSprite; bulletRadius = 0.3f; }
+        else if(attackInfo.bulletType == BulletType.Large) { sprite.sprite = largeSprite; bulletRadius = 0.3f; }
     }
 
     protected BulletHit CheckHit(Vector2 frameMovement)
@@ -191,7 +191,7 @@ public class Bullet : MonoBehaviour
         BulletHit hitContext = new() { isHit = false, dist = 10000};
         BulletHit hitContextCol = new() { isHit = false, dist = 10000 };
         //hit
-        RaycastHit2D[] hits = Physics2D.CircleCastAll(child.position, bulletRadius * 0.5f, frameMovement, frameMovement.magnitude + 0.05f, entityMask.value)
+        RaycastHit2D[] hits = Physics2D.CircleCastAll(child.position, bulletRadius, frameMovement, frameMovement.magnitude + 0.05f, entityMask.value)
             .Where(x=>!ignoreHit.Contains(x.collider.gameObject))
             .OrderBy(x => x.distance)
             .ToArray();
@@ -210,7 +210,7 @@ public class Bullet : MonoBehaviour
             entityHit.collider.TryGetComponent(out hitContext.hp);
         }
         //collision
-        RaycastHit2D hit = Physics2D.CircleCast(transform.position, bulletRadius * 0.5f, frameMovement, frameMovement.magnitude + 0.05f, collisionMask.value);
+        RaycastHit2D hit = Physics2D.CircleCast(transform.position, bulletRadius, frameMovement, frameMovement.magnitude + 0.05f, collisionMask.value);
         if (hit)
         {
             hitContextCol.hitInfo = hit;
@@ -229,6 +229,7 @@ public class Bullet : MonoBehaviour
 
     protected void RotateToDirection(Vector2 direction)
     {
+        if (direction.sqrMagnitude == 0) return;
         child.localRotation = Quaternion.Euler(0, 0, Vector2.SignedAngle(Vector2.right, direction)-90);
     }
 
@@ -239,7 +240,7 @@ public class Bullet : MonoBehaviour
 
         //find closest target
         float closestDist = 10000;
-        Collider2D closest = hits[0];
+        Collider2D closest = null;
         for (int i = 0; i < hits.Length; i++)
         {
             if (hits[i] == col) continue;

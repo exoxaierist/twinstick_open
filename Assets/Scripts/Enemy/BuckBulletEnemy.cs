@@ -47,7 +47,7 @@ public class BuckBulletEnemy : Enemy
 
     private IEnumerator Shoot()
     {
-        yield return new WaitForSeconds(Random.Range(1, 4f));
+        yield return Wait.Get(Random.Range(1, 4f));
         while (enabled)
         {
             attackInfo.direction = transform.GetDirToPlayer().Rotate(-30);
@@ -57,7 +57,7 @@ public class BuckBulletEnemy : Enemy
                 Bullet.Fire((Vector2)transform.position + attackInfo.direction * 0.5f, attackInfo);
                 attackInfo.direction = attackInfo.direction.Rotate(20);
             }
-            yield return new WaitForSeconds(Random.Range(3,6));
+            yield return Wait.Get(Random.Range(3,6));
         }
     }
 }

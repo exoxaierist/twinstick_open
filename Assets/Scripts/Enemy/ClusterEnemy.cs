@@ -28,7 +28,7 @@ public class ClusterEnemy : Enemy
 
     private IEnumerator ThrowBomb()
     {
-        yield return new WaitForSeconds(Random.Range(0, 2));
+        yield return Wait.Get(Random.Range(0, 2));
         while (!hp.isDead)
         {
             int count = Random.Range(2, 4);
@@ -42,7 +42,7 @@ public class ClusterEnemy : Enemy
                 Bomb.Throw(transform.position, (Vector2)transform.position + pos, attackInfo);
             }
 
-            yield return new WaitForSeconds(Random.Range(5, 6f));
+            yield return Wait.Get(Random.Range(5, 6f));
         }
     }
 

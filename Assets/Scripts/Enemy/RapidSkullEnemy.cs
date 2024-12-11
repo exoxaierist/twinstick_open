@@ -45,7 +45,7 @@ public class RapidSkullEnemy : Enemy
 
     private IEnumerator Shoot()
     {
-        yield return new WaitForSeconds(Random.Range(0, 3f));
+        yield return Wait.Get(Random.Range(0, 3f));
         while (enabled)
         {
             int count = Random.Range(3, 6);
@@ -54,9 +54,9 @@ public class RapidSkullEnemy : Enemy
                 SoundSystem.Play(SoundSystem.ACTION_SHOOT_ENEMY.GetRandom(), transform.position, 0.5f);
                 attackInfo.direction = transform.GetDirToPlayer().Rotate(Random.Range(-10,10));
                 Bullet.Fire((Vector2)transform.position + attackInfo.direction * 0.5f, attackInfo);
-                yield return new WaitForSeconds(0.2f);
+                yield return Wait.Get(0.2f);
             }
-            yield return new WaitForSeconds(Random.Range(6, 9f));
+            yield return Wait.Get(Random.Range(6, 9f));
         }
     }
 }

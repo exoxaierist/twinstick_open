@@ -47,7 +47,7 @@ public class FireSkullEnemy : Enemy
 
     private IEnumerator Shoot()
     {
-        yield return new WaitForSeconds(Random.Range(0, 3f));
+        yield return Wait.Get(Random.Range(0, 3f));
         while (enabled)
         {
             int count = Random.Range(3, 7);
@@ -56,9 +56,9 @@ public class FireSkullEnemy : Enemy
                 attackInfo.direction = transform.GetDirToPlayer();
                 SoundSystem.Play(SoundSystem.ACTION_SHOOT_ENEMY.GetRandom(), transform.position, 0.5f);
                 Bullet.Fire((Vector2)transform.position + attackInfo.direction * 0.5f, attackInfo);
-                yield return new WaitForSeconds(3f);
+                yield return Wait.Get(3f);
             }
-            yield return new WaitForSeconds(Random.Range(1, 5f));
+            yield return Wait.Get(Random.Range(1, 5f));
         }
     }
 }

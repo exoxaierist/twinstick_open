@@ -25,7 +25,17 @@ public class KnightEnemy : Enemy
             new(-2,-1,0)
         };
         randomOffset = Random.insideUnitCircle * 0.4f;
-        this.Delay(Random.Range(0, 1f), () => StartCoroutine(Move()));
+    }
+
+    protected override void OnActivation()
+    {
+        StartCoroutine(Move());
+    }
+
+    protected override void OnDeath(AttackInfo info)
+    {
+        base.OnDeath(info);
+        StopAllCoroutines();
     }
 
     private IEnumerator Move()
@@ -34,17 +44,13 @@ public class KnightEnemy : Enemy
         {
             nav.FindPath(Player.main.transform.position);
             pawn.Jump(nav.GetDirection() + randomOffset, 0.4f);
-            //doContactDamage = false;
-            //this.Delay(0.4f, () => doContactDamage = true);
-            SoundSystem.Play(SoundSystem.ACTION_JUMP, transform.position, 0.5f);
 
             this.Delay(0.1f, () => { visual.sprite.sortingLayerName = "Overlay"; col.enabled = false; });
             this.Delay(0.3f, () => { visual.sprite.sortingLayerName = "Default"; col.enabled = true; });
-
-            //set sprite dir
-            SetSpriteDirection(SpriteDirMode.FacePlayer);
             
-            yield return new WaitForSeconds(1.6f);
+            SoundSystem.Play(SoundSystem.ACTION_JUMP, transform.position, 0.5f);
+            SetSpriteDirection(SpriteDirMode.FacePlayer);
+            yield return Wait.Get(1.6f);
         }
     }
 }
