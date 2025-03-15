@@ -16,6 +16,7 @@ public class Boss : Enemy
     //test2
     
     public static HashSet<string> appearedBoss = new();
+    //on source
     public static string GetRandomId()
     {
         string result = allBoss.Except(appearedBoss).ToArray().GetRandom();
