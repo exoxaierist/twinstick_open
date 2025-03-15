@@ -12,6 +12,7 @@ public class Boss : Enemy
         "BOSS_BOB",
         "BOSS_AMALGAMATION",
     };
+    //test2
     public static HashSet<string> appearedBoss = new();
     public static string GetRandomId()
     {
