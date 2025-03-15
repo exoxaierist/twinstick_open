@@ -3,7 +3,7 @@ using System.Linq;
 
 public class Boss : Enemy
 {
-    //
+    
     private static string[] allBoss = new string[]
     {
         "BOSS_TWINKLEHOOF",
@@ -14,6 +14,7 @@ public class Boss : Enemy
     };
     //test3
     //test2
+    
     public static HashSet<string> appearedBoss = new();
     public static string GetRandomId()
     {
