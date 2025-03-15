@@ -3,7 +3,7 @@ using System.Linq;
 
 public class Boss : Enemy
 {
-    
+    //on clone asdf
     private static string[] allBoss = new string[]
     {
         "BOSS_TWINKLEHOOF",
