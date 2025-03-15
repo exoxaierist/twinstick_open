@@ -3,6 +3,7 @@ using System.Linq;
 
 public class Boss : Enemy
 {
+    //
     private static string[] allBoss = new string[]
     {
         "BOSS_TWINKLEHOOF",
